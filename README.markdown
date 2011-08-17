@@ -4,9 +4,9 @@ A Javascript implementation of the 8 steps of the HTML [outline algorithm](http:
 
 This script provides the function
 
-    Array(Section) outlineDOM(DOMNode root, boolean modifyDOM);
+    Array(Section) HTMLOutline(DOMNode root, boolean modifyDOM);
 
-Section is a new object type implementing the concept of [HTML section](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#concept-section). A section has the following properties:
+`Section` is a new object type implementing the concept of [HTML section](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#concept-section). A section has the following properties:
 
 * `parentSection` is the parent section if any, null otherwise;
 * `childSections` is the array of subsections;

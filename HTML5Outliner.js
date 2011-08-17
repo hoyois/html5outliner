@@ -22,7 +22,7 @@ function Section(type) {
 }
 
 // Main function
-function outlineDOM(root, modifyDOM) {
+function HTMLOutline(root, modifyDOM) {
 	if(root === undefined) root = document.body;
 	
 	if(!modifyDOM) root = root.cloneNode(true);

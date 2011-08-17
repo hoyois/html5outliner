@@ -15,10 +15,6 @@ function Section() {
 
 	this.associatedNodes = new Array(); // DOM nodes associated with the section
 	this.associatedElements = new Array();
-	this.associateWithNode = function(node) {
-		this.associatedNodes.push(node);
-		if(node.nodeType === 1) this.associatedElements.push(node);
-	};
 }
 
 // Main function
@@ -140,8 +136,9 @@ function HTMLOutline(root, modifyDOM) {
 	
 	// Now we must make the necessary definitions for the above to make sense...
 	function associateNodeWithSection(node, section) {
-		section.associateWithNode(node);
-		node.associateWithSection(section);
+		section.associatedNodes.push(node);
+		if(isElement(node)) section.associatedElements.push(node);
+		node.associatedSection = section;
 	}
 	
 	function isElement(node) {
@@ -183,7 +180,6 @@ function HTMLOutline(root, modifyDOM) {
 	
 	function extendNode(node) {
 		node.associatedSection = null;
-		node.associateWithSection = function(section) {node.associatedSection = section;};
 		
 		// Sectioning type constants
 		node.SECTION_ROOT = 1;

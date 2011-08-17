@@ -100,8 +100,7 @@ function HTMLOutline(root, modifyDOM) {
 			if(!stack.isEmpty && node === stack.top) stack.pop();
 			else if(!stack.isEmpty && stack.top.isHeadingElement) {
 				// Do nothing
-			}
-			else if(!stack.isEmpty && node.isSectioningContentElement) {
+			} else if(!stack.isEmpty && node.isSectioningContentElement) {
 				currentOutlinee = stack.pop();
 				currentSection = currentOutlinee.lastSection;
 				for(var i = 0; i < node.sectionList.length; i++) {

@@ -1,5 +1,5 @@
 // Section class
-function Section(type) {
+function Section() {
 	this.parentSection = null;
 	this.childSections = new Array();
 	this.firstChild = null;

@@ -11,7 +11,7 @@ This script provides the function
 * `parentSection` is the parent section if any, null otherwise;
 * `childSections` is the array of subsections;
 * `heading` is the heading element associated with the section if any, null otherwise;
-* `associatedNodes` is the array of all DOM nodes that are associated with the section, in DOM order (in particular, `associatedNodes[0]` is either a sectioning element or, for implied sections, a heading element);
+* `associatedNodes` is the array of all DOM nodes that are associated with the section, in algorithm order (in particular, `associatedNodes[0]` is a sectioning element for explicit sections);
 * `associatedElements` is the subarray of `associatedNodes` consisting of DOM elements.
 
 The `root` argument must be a sectioning element (it defaults to `document.body`). If the `modifyDOM` argument is `false`, `HTMLOutline` first creates a deep clone of `root` to work on and does not add properties to existing DOM nodes. In either case, it adds several properties to the nodes in the DOM subtree of `root` or its clone:

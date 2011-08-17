@@ -17,7 +17,7 @@ function Section(type) {
 	this.associatedElements = new Array();
 	this.associateWithNode = function(node) {
 		this.associatedNodes.push(node);
-		if(node.isElement) this.associatedElements.push(node);
+		if(node.nodeType === 1) this.associatedElements.push(node);
 	};
 }
 
@@ -52,10 +52,10 @@ function HTMLOutline(root, modifyDOM) {
 	// STEP 4 (minus DOM walk which is at the end)
 	// The following functions implement word for word the substeps of step 4
 	function enter(node) {
-		if(node.isElement) {
-			if(!stack.isEmpty && stack.top.isHeadingElement) {
+		if(isElement(node)) {
+			if(!stack.isEmpty && isHeadingElement(stack.top)) {
 				// Do nothing
-			} else if(node.isSectioningContentElement || node.isSectioningRootElement) {
+			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
 				if(currentOutlinee !== null && !currentSection.heading) {
 					// Algorithm says to "create implied heading" here,
 					// which is pointless in this implementation
@@ -67,7 +67,7 @@ function HTMLOutline(root, modifyDOM) {
 				currentOutlinee.appendSection(currentSection);
 			} else if(currentOutlinee === null) {
 				// Do nothing
-			} else if(node.isHeadingElement) {
+			} else if(isHeadingElement(node)) {
 				if(currentSection.heading === null) currentSection.heading = node;
 				else if(node.rank >= currentOutlinee.lastSection.heading.rank) {
 					var newSection = new Section();
@@ -96,23 +96,23 @@ function HTMLOutline(root, modifyDOM) {
 	}
 	
 	function exit(node) {
-		if(node.isElement) {
+		if(isElement(node)) {
 			if(!stack.isEmpty && node === stack.top) stack.pop();
-			else if(!stack.isEmpty && stack.top.isHeadingElement) {
+			else if(!stack.isEmpty && isHeadingElement(stack.top)) {
 				// Do nothing
-			} else if(!stack.isEmpty && node.isSectioningContentElement) {
+			} else if(!stack.isEmpty && isSectioningContentElement(node)) {
 				currentOutlinee = stack.pop();
 				currentSection = currentOutlinee.lastSection;
 				for(var i = 0; i < node.sectionList.length; i++) {
 					currentSection.appendChild(node.sectionList[i]);
 				}
-			} else if(!stack.isEmpty && node.isSectioningRootElement) {
+			} else if(!stack.isEmpty && isSectioningRootElement(node)) {
 				currentOutlinee = stack.pop();
 				currentSection = currentOutlinee.lastSection;
 				while(currentSection.childSections.length > 0) {
 					currentSection = currentSection.lastChild;
 				}
-			} else if(node.isSectioningContentElement || node.isSectioningRootElement) {
+			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
 				currentSection = currentOutlinee.firstSection;
 				endWalk(); // Jump to step 5
 			} else if(currentOutlinee === null) {
@@ -144,6 +144,22 @@ function HTMLOutline(root, modifyDOM) {
 		node.associateWithSection(section);
 	}
 	
+	function isElement(node) {
+		return node.nodeType === node.ELEMENT_NODE;
+	}
+	
+	function isSectioningContentElement(node) {
+		return node.sectionType === node.SECTION_CONTENT;
+	}
+	
+	function isSectioningRootElement(node) {
+		return node.sectionType === node.SECTION_ROOT;
+	}
+	
+	function isHeadingElement(node) {
+		return node.sectionType === node.SECTION_HEADING;
+	}
+	
 	function extend(node) {
 		if(node.nodeType === 1) {
 			switch(node.nodeName.toLowerCase()) {
@@ -168,11 +184,15 @@ function HTMLOutline(root, modifyDOM) {
 	function extendNode(node) {
 		node.associatedSection = null;
 		node.associateWithSection = function(section) {node.associatedSection = section;};
+		
+		// Sectioning type constants
+		node.SECTION_ROOT = 1;
+		node.SECTION_CONTENT = 2;
+		node.SECTION_HEADING = 3;
 	}
 	
 	function extendElement(node) {
 		extendNode(node);
-		node.isElement = true;
 	}
 	
 	function extendSectioningElement(node) {
@@ -190,17 +210,17 @@ function HTMLOutline(root, modifyDOM) {
 	
 	function extendSectioningContentElement(node) {
 		extendSectioningElement(node);
-		node.isSectioningContentElement = true;
+		node.sectionType = node.SECTION_CONTENT;
 	}
 	
 	function extendSectioningRootElement(node) {
 		extendSectioningElement(node);
-		node.isSectioningRootElement = true;
+		node.sectionType = node.SECTION_ROOT;
 	}
 	
 	function extendHeadingElement(node) {
 		extendElement(node);
-		node.isHeadingElement = true;
+		node.sectionType = node.SECTION_HEADING;
 	}
 	
 	function extendHeadingTitleElement(node) {
@@ -229,7 +249,7 @@ function HTMLOutline(root, modifyDOM) {
 	
 	try {
 		extend(root);
-		if(!root.isSectioningContentElement && !root.isSectioningRootElement) {
+		if(!isSectioningContentElement(root) && !isSectioningRootElement(root)) {
 			throw new Error(root.toString() + " is not a sectioning content element or a sectioning root element.");
 		}
 		// Walk the DOM subtree of root

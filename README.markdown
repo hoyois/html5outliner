@@ -4,7 +4,7 @@ A Javascript implementation of the 8 steps of the HTML [outline algorithm](http:
 
 This script provides the function
 
-<pre>Array(Section) __HTMLOutline__(DOMNode root, boolean modifyDOM);
+<pre>Array(Section) <b>HTMLOutline</b>(DOMNode root, boolean modifyDOM);</pre>
 
 `Section` is a new object type implementing the concept of [HTML section](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#concept-section). A section has the following properties:
 

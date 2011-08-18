@@ -4,6 +4,7 @@ var text = document.getElementById("html_input_area").value;
 var output = document.getElementById("output");
 output.innerHTML = "";
 var deep = document.getElementById("deep_outline").checked;
+var XML = document.getElementById("xml_parser").checked;
 var notes;
 
 try{
@@ -11,13 +12,18 @@ try{
 	var xml = (new DOMParser()).parseFromString(text, "text/xml");
 	var parserError = xml.getElementsByTagName("parsererror")[0];
 	if(parserError) {
-		addNote("Used HTML parser (<code>&lt;body&gt;</code> was added if not present)");
+		if(XML) {
+			var errorDiv = parserError.getElementsByTagName("div")[0];
+			if(!errorDiv) errorDiv = parserError;
+			throw new Error("Invalid XML\n\n" + errorDiv.textContent);
+		}
 		var xml = document.implementation.createHTMLDocument("");
 		try {
 			xml.documentElement.innerHTML = text;
 		} catch(error) {
 			throw new Error("Invalid HTML");
 		}
+		addNote("Used HTML parser (<code>&lt;body&gt;</code> was added if not present)");
 	} // else addNote("Used XML parser")
 	
 	var roots = getSectioningRoots(xml, deep);
@@ -67,10 +73,7 @@ function printSection(section) {
 	var li = document.createElement("li");
 	var title = document.createElement("span");
 	title.className = "sec_title";
-	//var details = document.createElement("span");
 	li.appendChild(title);
-	//li.appendChild(details)
-	//details.style.fontSize = "small";
 	
 	if(section.heading === null) {
 		title.textContent = "Untitled section";
@@ -134,10 +137,10 @@ function printSection(section) {
 function printError(message) {
 	var div = document.createElement("div");
 	div.innerHTML = "<h4>Error!</h4>";
-	var p = document.createElement("pre");
+	var p = document.createElement("p");
 	p.className = "error";
 	p.textContent = message;
-	div.appendChild(p)
+	div.appendChild(p);
 	return div;
 }
 

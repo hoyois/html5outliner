@@ -25,12 +25,20 @@ textarea {
 	resize: vertical;
 }
 
+p.option {
+	margin: 0;
+}
+
 input[type="checkbox"] {
 	margin-right: 1ex;
 }
 
 #output > ol {
 	padding-left: 0;
+}
+
+p.error {
+	white-space: pre-wrap;
 }
 
 ol.outline {

@@ -1,0 +1,96 @@
+#input {
+	float: left;
+	width: 48%;
+}
+
+header {
+	position: relative;
+}
+
+#outline {
+	float: right;
+	width: 48%;
+}
+
+button {
+	font-size: 13px;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+textarea {
+	width: 100%;
+	height: 200px;
+	resize: vertical;
+}
+
+input[type="checkbox"] {
+	margin-right: 1ex;
+}
+
+#output > ol {
+	padding-left: 0;
+}
+
+ol.outline {
+	counter-reset: numsection;
+	list-style-type: none;
+	padding-left: 32px;
+}
+
+ol.outline > li {
+	counter-increment: numsection;
+	text-indent: -12px;
+	padding-left: 12px;
+}
+
+ol.outline > li > * {
+	text-indent: 0;
+}
+
+span.sec_title::before {
+	content: counters(numsection, ".") ". ";
+	font-weight: bold;
+}
+
+span.triangle {
+	cursor: default;
+	-webkit-user-select: none;
+	font-family: "Apple Symbols", "Menlo", "Arial Unicode MS", monospace;
+	font-size: 12px;
+	display: inline-block;
+	width: 12px;
+	color: gray;
+}
+
+ul.details {
+	font-size: small;
+	color: black;
+	background-color: lightgray;
+	padding: 4px;
+	-webkit-border-radius: 4px;
+	list-style-type: none;
+	width: intrinsic;
+	margin: 2px 0 2px 0;
+}
+
+div.notes {
+	font-size: small;
+	counter-reset: note;
+}
+
+div.notes > ol {
+	margin-top: 0;
+	padding-left: 0;
+}
+
+div.notes > ol > li {
+	counter-increment: note;
+	list-style-type: none;
+}
+
+div.notes > ol > li::before {
+	content: counter(note) ". ";
+}
+

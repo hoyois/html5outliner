@@ -1,52 +1,72 @@
-function createOutline() {
+function outline() {
 
-var text = document.getElementById("html_input_area").value;
+var url = document.getElementById("url_input").value;
+var text = document.getElementById("direct_input").value;
 var output = document.getElementById("output");
-output.innerHTML = "";
-var deep = document.getElementById("deep_outline").checked;
-var XML = document.getElementById("xml_parser").checked;
 var notes;
 
-try{
-	// try XML parser first
-	var xml = (new DOMParser()).parseFromString(text, "text/xml");
-	var parserError = xml.getElementsByTagName("parsererror")[0];
-	if(parserError) {
-		if(XML) {
-			var errorDiv = parserError.getElementsByTagName("div")[0];
-			if(!errorDiv) errorDiv = parserError;
-			throw new Error("Invalid XML\n\n" + errorDiv.textContent);
+// Options
+var deep = document.getElementById("deep_outline").checked;
+var XML = document.getElementById("xml_parser").checked;
+
+// URL input first
+if(url) {
+	var xhr = new XMLHttpRequest();
+	xhr.open("GET", url, true);
+	xhr.onload = function() {
+		showOutline(xhr.responseXML, xhr.responseText);
+	};
+	output.innerHTML = "<p>Fetching URL…</p>";
+	xhr.send(null);
+} else {
+	showOutline((new DOMParser()).parseFromString(text, "text/xml"), text);
+}
+
+function showOutline(xml, source) {
+	try {
+		output.innerHTML = "";
+		var parserError = xml.getElementsByTagName("parsererror")[0];
+		if(parserError) {
+			if(XML) {
+				var errorDiv = parserError.getElementsByTagName("div")[0];
+				if(!errorDiv) errorDiv = parserError;
+				var error = new Error(errorDiv.textContent);
+				var match = errorDiv.textContent.match(/line\s(\d+)/);
+				if(match) error.line = parseInt(match[1]) - 1;
+				match = errorDiv.textContent.match(/column\s(\d+)/);
+				if(match) error.column = parseInt(match[1]) - 1;
+				throw error;
+			}
+			xml = document.implementation.createHTMLDocument("");
+			try {
+				xml.documentElement.innerHTML = source
+			} catch(error) {
+				throw new Error("Invalid HTML");
+			}
+			addNote("Used HTML parser (<code>&lt;body&gt;</code> was added if not present)");
+		} // else addNote("Used XML parser")
+		
+		var roots = getSectioningRoots(xml, deep);
+		if(roots.length === 0) { // create virtual root
+			var root = document.createElement("body");
+			for(var i = 0; i < xml.childNodes.length; i++) {
+				if(xml.childNodes[i].nodeType !== 10) root.appendChild(xml.childNodes[i]);
+			}
+			root.isVirtual = true;
+			roots = [root];
+			addNote("No sectioning root element found: added virtual root");
+		} else if(!deep && roots.length > 1) {
+			addNote("Several top-level sectioning roots elements found");
 		}
-		var xml = document.implementation.createHTMLDocument("");
-		try {
-			xml.documentElement.innerHTML = text;
-		} catch(error) {
-			throw new Error("Invalid HTML");
+		
+		for(var i = 0; i < roots.length; i++) {
+			output.appendChild(printOutline(HTMLOutline(roots[i], true)));
 		}
-		addNote("Used HTML parser (<code>&lt;body&gt;</code> was added if not present)");
-	} // else addNote("Used XML parser")
-	
-	var roots = getSectioningRoots(xml, deep);
-	if(roots.length === 0) { // create virtual root
-		var root = document.createElement("body");
-		for(var i = 0; i < xml.childNodes.length; i++) {
-			if(xml.childNodes[i].nodeType !== 10) root.appendChild(xml.childNodes[i]);
-		}
-		root.isVirtual = true;
-		roots = [root];
-		addNote("No sectioning root element found: added virtual root");
-	} else if(!deep && roots.length > 1) {
-		addNote("Several top-level sectioning roots elements found");
+		
+		if(notes) output.appendChild(notes);
+	} catch(error) {
+		output.appendChild(printError(error, source));
 	}
-	
-	for(var i = 0; i < roots.length; i++) {
-		output.appendChild(printOutline(HTMLOutline(roots[i], true)));
-	}
-	
-	if(notes) output.appendChild(notes);
-	
-} catch(error) {
-	output.appendChild(printError(error.message));
 }
 
 function addNote(html) {
@@ -82,20 +102,6 @@ function printSection(section) {
 		title.textContent = section.heading.text;
 	}
 	
-	// var element = "", heading = "";
-	// 	if(section.associatedNodes[0].sectionType === 1 || section.associatedNodes[0].sectionType === 2) {
-	// 		if(section.associatedNodes[0].isVirtual) {
-	// 			title.style.color = "gray";
-	// 		} else {
-	// 			element = "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">";
-	// 		}
-	// 	}
-	// 	if(section.heading !== null) {
-	// 		heading = "<" + section.heading.nodeName.toLowerCase() + ">";
-	// 	}
-	// 	if(element && heading) element += ", ";
-	// 	details.textContent = " — " + element + heading;
-	
 	var details = document.createElement("ul");
 	details.className = "details";
 	details.style.display = "none";
@@ -117,15 +123,14 @@ function printSection(section) {
 	li.appendChild(details);
 	
 	var triangle = document.createElement("span");
-	triangle.className = "triangle";
-	triangle.textContent = "▶";
+	triangle.className = "show_details";
 	triangle.addEventListener("click", function() {
-		if(details.style.display === "none") {
+		if(this.className === "show_details") {
+			this.className = "hide_details";
 			details.style.display = "block";
-			this.textContent = "▼";
 		} else {
+			this.className = "show_details";
 			details.style.display = "none";
-			this.textContent = "▶";
 		}
 	}, false);
 	li.insertBefore(triangle, li.firstChild);
@@ -134,13 +139,28 @@ function printSection(section) {
 	return li;
 }
 
-function printError(message) {
+function printError(error, source) {
 	var div = document.createElement("div");
 	div.innerHTML = "<h4>Error!</h4>";
 	var p = document.createElement("p");
 	p.className = "error";
-	p.textContent = message;
+	p.textContent = error.message;
 	div.appendChild(p);
+	if(error.line !== undefined) {
+		var line = source.split("\n")[error.line];
+		if(line !== undefined) {
+			p = document.createElement("pre");
+			if(error.column !== undefined) {
+				var caret = document.createElement("span");
+				caret.className = "error_caret";
+				caret.textContent = line.length > error.column ? line.charAt(error.column) : " ";
+				p.appendChild(document.createTextNode(line.substring(0,error.column)));
+				p.appendChild(caret);
+				p.appendChild(document.createTextNode(line.substring(error.column+1)));
+			} else p.textContent = line;
+			div.appendChild(p);
+		}
+	}
 	return div;
 }
 

@@ -3,10 +3,6 @@
 	width: 48%;
 }
 
-header {
-	position: relative;
-}
-
 #outline {
 	float: right;
 	width: 48%;
@@ -25,12 +21,21 @@ textarea {
 	resize: vertical;
 }
 
+input[type="text"] {
+	width: 100%;
+	margin-bottom: 1em;
+}
+
 p.option {
 	margin: 0;
 }
 
 input[type="checkbox"] {
 	margin-right: 1ex;
+}
+
+span.error_caret {
+	background-color: #BBB;
 }
 
 #output > ol {
@@ -62,7 +67,7 @@ span.sec_title::before {
 	font-weight: bold;
 }
 
-span.triangle {
+span.show_details, span.hide_details {
 	cursor: default;
 	-webkit-user-select: none;
 	font-family: "Apple Symbols", "Menlo", "Arial Unicode MS", monospace;
@@ -70,6 +75,14 @@ span.triangle {
 	display: inline-block;
 	width: 12px;
 	color: gray;
+}
+
+span.hide_details::before {
+	content: "▼";
+}
+
+span.show_details::before {
+	content: "▶";
 }
 
 ul.details {

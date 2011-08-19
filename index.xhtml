@@ -13,12 +13,13 @@
 <header id="top">
 <h1>HTML5 Outliner</h1>
 <nav>
+	<h3 class="offscreen">Navigation</h3>
 	<a href="../">Home</a> &gt; <a>HTML5 Outliner</a>
 </nav>
 </header>
 
 <div id="intro">
-	<p>This is a rudimentary front-end for my implementation of the <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline">HTML outline algorithm</a>. See the <a href="https://github.com/hoyois/html5outliner">GitHub page</a> for technical details.<!-- , and the <a href="../#bookmarklets">Home page</a> for a handy bookmarklet. --></p>
+	<p>This is a rudimentary front-end for my implementation of the <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline">HTML outline algorithm</a>. See the <a href="https://github.com/hoyois/html5outliner">GitHub repository page</a> for technical details, and the <a href="../#bookmarklets">Home page</a> for a handy bookmarklet.</p>
 	
 	<p>Due to the limitations of working client-side, only direct text input is supported.</p>
 </div>
@@ -26,10 +27,11 @@
 <section id="input">
 <header>
 <h2>Input HTML</h2>
-<button onclick="createOutline();">Create outline &gt;</button>
+<button onclick="outline();">Create outline &gt;</button>
 </header>
 
-<textarea id="html_input_area">&lt;body&gt;
+<input id="url_input" type="hidden" value=""/>
+<textarea id="direct_input">&lt;body&gt;
 	&lt;h4&gt;Apples&lt;/h4&gt;
 	&lt;p&gt;Apples are fruit.&lt;/p&gt;
 	&lt;section&gt;
@@ -55,10 +57,11 @@
 </div>
 </section>
 
+<script type="text/javascript" src="checkQuery.js"></script>
 <div style="clear: both;"></div>
 
 <footer>
-<p id="footer_left">Updated on <time datetime="2011-08-18">August 18, 2011</time></p>
+<p id="footer_left">Marc Hoyois, <time datetime="2011-08-19">August 19, 2011</time></p>
 </footer>
 
 </body>

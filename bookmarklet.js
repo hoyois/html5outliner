@@ -4,7 +4,7 @@
 // remove \s*//.*
 // remove \s*\\?\n\s*
 (function() {
-/*____BEGIN_OPTIONS____the_name_of_the_option_is_separated_from_its_value_by_=_*/
+/*____BEGIN_OPTIONS____*/
 var numbering = 1, showTags = true, clickOutside = true, createLinks = true;
 /*_____END_OPTIONS_____*/
 
@@ -119,7 +119,7 @@ if(numbering > 0) {
 		width:10em;\
 	}");
 } else {
-	CSSRules.push("#h5o-inside > ol > li{\
+	CSSRules.push("#h5o-inside>ol>li{\
 		margin-left:0;\
 	}");
 }

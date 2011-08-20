@@ -69,7 +69,6 @@ span.sec_title::before {
 
 span.show_details, span.hide_details {
 	cursor: default;
-	-webkit-user-select: none;
 	font-family: "Apple Symbols", "Menlo", "Arial Unicode MS", monospace;
 	font-size: 12px;
 	display: inline-block;
@@ -90,7 +89,7 @@ ul.details {
 	color: black;
 	background-color: lightgray;
 	padding: 4px;
-	-webkit-border-radius: 4px;
+	border-radius: 4px;
 	list-style-type: none;
 	width: intrinsic;
 	margin: 2px 0 2px 0;

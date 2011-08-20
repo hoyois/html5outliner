@@ -9,8 +9,10 @@ var notes;
 var deep = document.getElementById("deep_outline").checked;
 var XML = document.getElementById("xml_parser").checked;
 
-// URL input first
-if(url) {
+// Direct input first
+if(text) {
+	showOutline((new DOMParser()).parseFromString(text, "text/xml"), text);
+} else {
 	var xhr = new XMLHttpRequest();
 	xhr.open("GET", url, true);
 	xhr.onload = function() {
@@ -18,8 +20,6 @@ if(url) {
 	};
 	output.innerHTML = "<p>Fetching URL…</p>";
 	xhr.send(null);
-} else {
-	showOutline((new DOMParser()).parseFromString(text, "text/xml"), text);
 }
 
 function showOutline(xml, source) {

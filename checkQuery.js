@@ -10,7 +10,6 @@ if(location.search) {
 	var queryOptions = parseWithRegExp(location.search.substr(1), /([^&=]*)=([^&]*)/g);
 	
 	if(queryOptions.url) {
-		// document.getElementById("url_input").type = "text";
 		document.getElementById("url_input").value = decodeURIComponent(queryOptions.url);
 		document.getElementById("direct_input").value = "";
 	}

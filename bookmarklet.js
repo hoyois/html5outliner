@@ -173,7 +173,6 @@ toc.appendChild(inside);
 
 function printOutline(outline) {
 	var ol = document.createElement("ol");
-	ol.className = "h5o-outline";
 	for(var i = 0; i < outline.length; i++) {
 		ol.appendChild(printSection(outline[i]));
 	}

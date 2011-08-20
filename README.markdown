@@ -14,7 +14,7 @@ This script provides the function
 * `associatedNodes` is the array of all DOM nodes that are associated with the section, in algorithm order (in particular, `associatedNodes[0]` is a sectioning element for explicit sections);
 * `associatedElements` is the subarray of `associatedNodes` consisting of DOM elements.
 
-The `root` argument must be a sectioning element (it defaults to `document.body`). If the `modifyDOM` argument is `false`, `HTMLOutline` first creates a deep clone of `root` to work on and does not add properties to existing DOM nodes. In either case, it adds several properties to the nodes in the DOM subtree of `root` or its clone:
+The `root` argument must be a sectioning element (it defaults to `document.body`), otherwise an error is returned. If the `modifyDOM` argument is `false`, `HTMLOutline` first creates a deep clone of `root` to work on and does not add properties to existing DOM nodes. In either case, it adds several properties to the nodes in the DOM subtree of `root` or its clone:
 
 * `associatedSection` is the section associated with the node (defined for all nodes);
 * `sectionList` is the outline of a sectioning element, i.e., the list of its top-level sections;

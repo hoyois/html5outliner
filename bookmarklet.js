@@ -125,23 +125,24 @@ if(numbering > 0) {
 }
 /*_____END_CSS_____*/
 
-var toc = document.getElementById("h5o-outside");
-function close() {
+// This must be global so that event listener can be removed when clicking on bookmarklet again
+if(!window.h5o_sdWoNJpsAgQGAaf) window.h5o_sdWoNJpsAgQGAaf = function() {
+	document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
 	var i = 0;
 	var e;
 	while(e = document.getElementById("h5o-id-" + i)) {
 		e.removeAttribute("id");
 		++i;
 	}
-	document.body.removeChild(toc);
-}
+	document.body.removeChild(document.getElementById("h5o-outside"));
+};
 
-if(toc) {
-	close();
+if(document.getElementById("h5o-outside")) {
+	h5o_sdWoNJpsAgQGAaf();
 	return;
 }
 
-toc = document.createElement("div");
+var toc = document.createElement("div");
 toc.id = "h5o-outside";
 
 // Stylesheet
@@ -161,7 +162,7 @@ inside.id = "h5o-inside";
 
 if(clickOutside) {
 	inside.addEventListener("click", function(event) {event.stopPropagation();}, false);
-	document.addEventListener("click", close, false);
+	document.addEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
 }
 
 // Create outline

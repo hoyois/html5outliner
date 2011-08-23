@@ -184,11 +184,11 @@ function printSection(section) {
 	var li = document.createElement("li");
 	var title = document.createElement("a");
 	li.appendChild(title);
-
+	
 	if(section.heading === null) {
 		title.textContent = "No title" + (showTags ? " " + "(" + section.associatedNodes[0].nodeName.toLowerCase() + ")" : "");
 		li.className = "h5o-notitle";
-	} else if(section.heading.text === "") {
+	} else if(/^[ \r\n\t]*$/.test(section.heading.text)) { // matches CSS whitespace
 		title.textContent = "Empty title";
 		li.className = "h5o-notitle";
 	} else {

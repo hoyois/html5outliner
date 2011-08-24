@@ -46,7 +46,18 @@ p.error {
 	white-space: pre-wrap;
 }
 
+span.root {
+	display: block;
+	font-family: monospace;
+	margin-top: 1em;
+}
+
+span.root.virtual {
+	color: lightgray;
+}
+
 ol.outline {
+	margin: 0;
 	counter-reset: numsection;
 	list-style-type: none;
 	padding-left: 32px;
@@ -98,6 +109,7 @@ ul.details {
 div.notes {
 	font-size: small;
 	counter-reset: note;
+	margin: 1em 0;
 }
 
 div.notes > ol {

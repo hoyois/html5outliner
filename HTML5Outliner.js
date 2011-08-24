@@ -14,14 +14,10 @@ function Section() {
 	this.heading = null; // heading element associated with the section, if any
 
 	this.associatedNodes = new Array(); // DOM nodes associated with the section
-	this.associatedElements = new Array();
 }
 
 // Main function
-function HTMLOutline(root, modifyDOM) {
-	if(root === undefined) root = document.body;
-	
-	if(!modifyDOM) root = root.cloneNode(true);
+function HTMLOutline(root) {
 	
 	// BEGIN OUTLINE ALGORITHM
 	// STEP 1
@@ -50,12 +46,13 @@ function HTMLOutline(root, modifyDOM) {
 	function enter(node) {
 		if(isElement(node)) {
 			if(!stack.isEmpty && isHeadingElement(stack.top)) {
-				// Do nothing
+				// Depth computation (not part of algorithm)
+				if(isHeadingElement(node)) node.depth = stack.top.depth;
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
-				if(currentOutlinee !== null && !currentSection.heading) {
-					// Algorithm says to "create implied heading" here,
-					// which is pointless in this implementation
-				}
+				// if(currentOutlinee !== null && !currentSection.heading) {
+					// Algorithm says to "create implied heading" here, which is pointless:
+					// a section has an "implied heading" iff it has no explicit heading
+				// }
 				if(currentOutlinee !== null) stack.push(currentOutlinee);
 				currentOutlinee = node;
 				currentSection = new Section();
@@ -85,9 +82,12 @@ function HTMLOutline(root, modifyDOM) {
 					} while(true);
 				}
 				stack.push(node);
-			} else {
+				// Depth computation (not part of algorithm)
+				var s = currentSection;
+				while((s = s.parentSection) !== null) ++node.depth;
+			} // else {
 				// Do nothing
-			}
+			// }
 		}
 	}
 	
@@ -109,52 +109,47 @@ function HTMLOutline(root, modifyDOM) {
 					currentSection = currentSection.lastChild;
 				}
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
-				currentSection = currentOutlinee.firstSection;
-				endWalk(); // Jump to step 5
-			} else if(currentOutlinee === null) {
+				// The algorith says to end the walk here, but that's assuming root is a sectioning element
+				// Instead we reset the algorithm for subsequent top-level sectioning elements
+				currentOutlinee = null;
+				currentSection = null;
+			} // else if(currentOutlinee === null) {
 				// Do nothing
-			} else {
+			// } else {
 				// Do nothing
-			}
+			// }
 		}
 		if(node.associatedSection === null && currentSection !== null) associateNodeWithSection(node, currentSection);
 	}
 	
-	function endWalk() {
-		// STEP 5
-		// According to the algorithm, we should check if currentOutlinee is null,
-		// but this can't actually happen since root is a sectioning element
-		// STEP 6
-		enter = function(node) {associateNodeWithSection(node, currentOutlinee.firstSection);};
-		exit = function(node) {};
-		// STEP 7
-		// The heading associated to node is node.associatedSection.heading, if any
-		// STEP 8
-		// Nothing to do
-		// END OUTLINE ALGORITHM
-	}
+	// STEP 5 and 6
+	// Vacuous steps
+	// STEP 7
+	// The heading associated to node is node.associatedSection.heading, if any
+	// STEP 8
+	// Nothing to do
+	// END OUTLINE ALGORITHM
 	
-	// Now we must make the necessary definitions for the above to make sense...
+	// Now we must make the necessary definitions for the above to make sense
 	function associateNodeWithSection(node, section) {
 		section.associatedNodes.push(node);
-		if(isElement(node)) section.associatedElements.push(node);
 		node.associatedSection = section;
 	}
 	
 	function isElement(node) {
-		return node.nodeType === node.ELEMENT_NODE;
+		return node.nodeType === 1;
 	}
 	
 	function isSectioningContentElement(node) {
-		return node.sectionType === node.SECTION_CONTENT;
+		return node.sectionType === 1;
 	}
 	
 	function isSectioningRootElement(node) {
-		return node.sectionType === node.SECTION_ROOT;
+		return node.sectionType === 2;
 	}
 	
 	function isHeadingElement(node) {
-		return node.sectionType === node.SECTION_HEADING;
+		return node.rank !== undefined;
 	}
 	
 	function extend(node) {
@@ -166,33 +161,24 @@ function HTMLOutline(root, modifyDOM) {
 				case "article": case "aside": case "nav": case "section":
 					extendSectioningContentElement(node);
 					break;
+				case "h1": case "h2": case "h3": case "h4": case "h5": case "h6":
+					extendHeadingElement(node);
+					break;
 				case "hgroup":
 					extendHeadingGroupElement(node);
 					break;
-				case "h1": case "h2": case "h3": case "h4": case "h5": case "h6": case "hgroup":
-					extendHeadingTitleElement(node);
-					break;
 				default:
-					extendElement(node);
+					extendNode(node);
 			}
 		} else extendNode(node);
 	}
 	
 	function extendNode(node) {
 		node.associatedSection = null;
-		
-		// Sectioning type constants
-		node.SECTION_ROOT = 1;
-		node.SECTION_CONTENT = 2;
-		node.SECTION_HEADING = 3;
-	}
-	
-	function extendElement(node) {
-		extendNode(node);
 	}
 	
 	function extendSectioningElement(node) {
-		extendElement(node);
+		extendNode(node);
 		node.sectionList = new Array();
 		node.firstSection = null;
 		node.lastSection = null;
@@ -206,28 +192,28 @@ function HTMLOutline(root, modifyDOM) {
 	
 	function extendSectioningContentElement(node) {
 		extendSectioningElement(node);
-		node.sectionType = node.SECTION_CONTENT;
+		node.sectionType = 1;
 	}
 	
 	function extendSectioningRootElement(node) {
 		extendSectioningElement(node);
-		node.sectionType = node.SECTION_ROOT;
+		node.sectionType = 2;
+	}
+	
+	function extendHeadingContentElement(node) {
+		extendNode(node);
+		node.depth = 1;
 	}
 	
 	function extendHeadingElement(node) {
-		extendElement(node);
-		node.sectionType = node.SECTION_HEADING;
-	}
-	
-	function extendHeadingTitleElement(node) {
-		extendHeadingElement(node);
+		extendHeadingContentElement(node);
 		node.rank = -parseInt(node.nodeName.charAt(1));
 		node.text = node.textContent;
 	}
 	
 	function extendHeadingGroupElement(node) {
-		extendHeadingElement(node);
-
+		extendHeadingContentElement(node);
+		
 		for(var i = 1; i <= 6; i++) {
 			var h = node.getElementsByTagName("h" + i);
 			if(h.length > 0) {
@@ -243,35 +229,24 @@ function HTMLOutline(root, modifyDOM) {
 		}
 	}
 	
-	try {
-		extend(root);
-		if(!isSectioningContentElement(root) && !isSectioningRootElement(root)) {
-			throw new Error(root.toString() + " is not a sectioning content element or a sectioning root element.");
+	// Walk the DOM subtree of root
+	var node = root;
+	start: while(node) {
+		extend(node);
+		enter(node);
+		if(node.firstChild) {
+			node = node.firstChild;
+			continue start;
 		}
-		// Walk the DOM subtree of root
-		enter(root);
-		var node = root.firstChild;
-		start: while(node) {
-			extend(node);
-			enter(node);
-			if(node.firstChild) {
-				node = node.firstChild;
+		while(node) {
+			exit(node);
+			if(node === root) break start;
+			if(node.nextSibling) {
+				node = node.nextSibling;
 				continue start;
 			}
-			while(node) {
-				if(node === root) break start;
-				exit(node);
-				if(node.nextSibling) {
-					node = node.nextSibling;
-					continue start;
-				}
-				node = node.parentNode;
-			}
+			node = node.parentNode;
 		}
-		exit(root);
-	} catch(error) {
-		return error;
 	}
-	return root.sectionList;
 }
 

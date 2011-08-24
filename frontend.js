@@ -11,62 +11,92 @@ var XML = document.getElementById("xml_parser").checked;
 
 // Direct input first
 if(text) {
-	showOutline((new DOMParser()).parseFromString(text, "text/xml"), text);
+	processHTML((new DOMParser()).parseFromString(text, "text/xml"), text);
 } else {
 	var xhr = new XMLHttpRequest();
 	xhr.open("GET", url, true);
 	xhr.onload = function() {
-		showOutline(xhr.responseXML, xhr.responseText);
+		processHTML(xhr.responseXML, xhr.responseText);
 	};
 	output.innerHTML = "<p>Fetching URL…</p>";
 	xhr.send(null);
 }
 
-function showOutline(xml, source) {
-	try {
-		output.innerHTML = "";
-		var parserError = xml.getElementsByTagName("parsererror")[0];
-		if(parserError) {
-			if(XML) {
-				var errorDiv = parserError.getElementsByTagName("div")[0];
-				if(!errorDiv) errorDiv = parserError;
-				var error = new Error(errorDiv.textContent);
-				var match = errorDiv.textContent.match(/line\s(\d+)/);
-				if(match) error.line = parseInt(match[1]) - 1;
-				match = errorDiv.textContent.match(/column\s(\d+)/);
-				if(match) error.column = parseInt(match[1]) - 1;
-				throw error;
-			}
-			xml = document.implementation.createHTMLDocument("");
-			try {
-				xml.documentElement.innerHTML = source
-			} catch(error) {
-				throw new Error("Invalid HTML");
-			}
-			addNote("Used HTML parser (<code>&lt;body&gt;</code> was added if not present)");
-		} // else addNote("Used XML parser")
+function parseHTML(xml, source) {
+	
+	var fragment;
 		
-		var roots = getSectioningRoots(xml, deep);
-		if(roots.length === 0) { // create virtual root
-			var root = document.createElement("body");
-			for(var i = 0; i < xml.childNodes.length; i++) {
-				if(xml.childNodes[i].nodeType !== 10) root.appendChild(xml.childNodes[i]);
-			}
-			root.isVirtual = true;
-			roots = [root];
-			addNote("No sectioning root element found: added virtual root");
-		} else if(!deep && roots.length > 1) {
-			addNote("Several top-level sectioning roots elements found");
+	var parserError = xml.getElementsByTagName("parsererror")[0];
+	
+	if(!parserError) { // valid XML
+		fragment = xml.documentElement;
+	} else {
+		if(XML) { // Report XML error
+			var errorDiv = parserError.getElementsByTagName("div")[0];
+			if(!errorDiv) errorDiv = parserError;
+			var error = new Error(errorDiv.textContent);
+			var match = errorDiv.textContent.match(/line\s(\d+)/);
+			if(match) error.line = parseInt(match[1]) - 1;
+			match = errorDiv.textContent.match(/column\s(\d+)/);
+			if(match) error.column = parseInt(match[1]) - 1;
+			throw error;
 		}
 		
-		for(var i = 0; i < roots.length; i++) {
-			output.appendChild(printOutline(HTMLOutline(roots[i], true)));
+		var html = document.implementation.createHTMLDocument("");
+		try {
+			if(/<body/i.test(source)) { // can't find another way to do it
+				html.documentElement.innerHTML = source;
+				fragment = html.body;
+			} else {
+				var range = html.createRange();
+				range.selectNode(html.body);
+				fragment = range.createContextualFragment(source);
+			}
+		} catch(error) {
+			throw new Error("Invalid HTML"); // (?) should not happen with HTML5 parsing algorithm
 		}
-		
-		if(notes) output.appendChild(notes);
+		addNote("Used HTML parser");
+	}
+	return fragment;
+}
+
+function processHTML(xml, source) {
+	output.innerHTML = "";
+	try{
+		var fragment = parseHTML(xml, source);
 	} catch(error) {
 		output.appendChild(printError(error, source));
+		return;
 	}
+	
+	var roots = getSectioningRoots(fragment, deep);
+	if(roots.length === 0) { // create virtual root
+		
+		var root = fragment.ownerDocument.createElement("body");
+		while(fragment.childNodes.length > 0) {
+			if(fragment.childNodes[0].nodeType === 10) fragment.removeChild(fragment.childNodes[0]);
+			else root.appendChild(fragment.childNodes[0]);
+		}
+		root.isVirtual = true;
+		fragment.appendChild(root);
+		roots = [root];
+		addNote("No sectioning root element found: added virtual root");
+	} else if(!deep && roots.length > 1) {
+		addNote("Several top-level sectioning root elements found");
+	}
+	
+	HTMLOutline(fragment);
+   
+	for(var i = 0; i < roots.length; i++) {
+		var span = document.createElement("span");
+		span.className = "root";
+		if(roots[i].isVirtual) span.className += " virtual";
+		span.textContent = "<" + roots[i].nodeName.toLowerCase() + ">";
+		output.appendChild(span);
+		output.appendChild(printOutline(roots[i].sectionList));
+	}
+   
+	if(notes) output.appendChild(notes);
 }
 
 function addNote(html) {
@@ -107,18 +137,17 @@ function printSection(section) {
 	details.style.display = "none";
 	var type;
 	if(section.associatedNodes[0].sectionType === 1 || section.associatedNodes[0].sectionType === 2) {
-		if(section.associatedNodes[0].isVirtual) {
-			title.style.color = "gray";
-		} else {
 			type = "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>";
-		}
 	} else if(section.associatedNodes[0].sectionType === 2) {
 		type = "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>";
 	} else type ="Implied section";
 	var s = "";
 	if(type) s += "<li>" + type + "</li>";
-	if(section.heading) s+="<li>Heading rank: " + (-section.heading.rank) + "</li>"
-	s+= "<li># of associated elements: " + section.associatedElements.length + "</li>";
+	if(section.heading) {
+		s+="<li>Heading rank: " + (section.heading.rank) + "</li>";
+		s+="<li>Heading depth: " + (section.heading.depth) + "</li>";
+	}
+	s+= "<li># of associated nodes: " + section.associatedNodes.length + "</li>";
 	details.innerHTML = s;
 	li.appendChild(details);
 	

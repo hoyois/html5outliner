@@ -1,27 +1,34 @@
 # HTML5Outliner.js
 
-A Javascript implementation of the 8 steps of the HTML [outline algorithm](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline).
+A Javascript implementation of the HTML [outline algorithm](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline).
 
 This script provides the function
 
-<pre>Array(Section) <b>HTMLOutline</b>(DOMNode root, boolean modifyDOM);</pre>
+<pre>void <b>HTMLOutline</b>(Node <i>root</i>);</pre>
 
-`Section` is a new object type implementing the concept of [HTML section](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#concept-section). A section has the following properties:
+and defines a new object type `Section` implementing the concept of [HTML section](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#concept-section). A section has the following properties:
 
-* `parentSection` is the parent section if any, null otherwise;
+* `parentSection` is the parent section if any, `null` otherwise;
 * `childSections` is the array of subsections;
-* `heading` is the heading element associated with the section if any, null otherwise;
-* `associatedNodes` is the array of all DOM nodes that are associated with the section, in algorithm order (in particular, `associatedNodes[0]` is a sectioning element for explicit sections);
-* `associatedElements` is the subarray of `associatedNodes` consisting of DOM elements.
+* `heading` is the heading content element associated with the section if any, `null` otherwise;
+* `associatedNodes` is the array of all DOM nodes that are associated with the section, in algorithm order (in particular, `associatedNodes[0]` is a sectioning element for explicit sections).
 
-The `root` argument must be a sectioning element (it defaults to `document.body`), otherwise an error is returned. If the `modifyDOM` argument is `false`, `HTMLOutline` first creates a deep clone of `root` to work on and does not add properties to existing DOM nodes. In either case, it adds several properties to the nodes in the DOM subtree of `root` or its clone:
+The function `HTMLOutline` adds several properties to the nodes in the DOM subtree of `root`:
 
-* `associatedSection` is the section associated with the node (defined for all nodes);
+* `associatedSection` is the section associated with a node if any, `null` otherwise;
 * `sectionList` is the outline of a sectioning element, i.e., the list of its top-level sections;
-* `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading element;
-* `text` is the [text](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-hgroup-element) of a heading element.
+* `text` is the [text](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-hgroup-element) of a heading content element;
+* `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element;
+* `depth` is the [depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element (this depends on `root`).
 
-The return value of the function is `root.sectionList`, the outline of `root`.
+## Note on the outline algorithm
 
+The outline algorithm only produces the correct result when the input is a sectioning element, and the steps 5 and 6 of the algorithm are vacuous. One can try to apply the algorithm directly to an arbitrary node, but it only produces the outline of the first sectioning descendent of the node and associates unrelated nodes to the first section of that outline. For example, if the algorithm is applied to
 
-
+	<div>
+		<section></section>
+		<section></section>
+		<h1></h1>
+	</div>
+	
+only one section is created for the first `section` element, and all nodes are associated with that section. Applying the `HTMLOutline` function, however, results in two sections being created, each associated with a `section` element, and no other node is associated to a section.

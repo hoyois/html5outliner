@@ -1,4 +1,4 @@
-# HTML5Outliner.js
+# HTMLOutliner.js
 
 A Javascript implementation of the HTML [outline algorithm](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline).
 
@@ -19,7 +19,7 @@ The function `HTMLOutline` adds several properties to the nodes in the DOM subtr
 * `sectionList` is the outline of a sectioning element, i.e., the list of its top-level sections;
 * `text` is the [text](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-hgroup-element) of a heading content element;
 * `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element;
-* `depth` is the [depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element (this depends on `root`).
+* `depth` is the [depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element.
 
 ## Note on the outline algorithm
 

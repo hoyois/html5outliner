@@ -63,18 +63,16 @@ function HTMLOutline(root) {
 			} else if(isHeadingElement(node)) {
 				if(currentSection.heading === null) currentSection.heading = node;
 				else if(node.rank >= currentOutlinee.lastSection.heading.rank) {
-					var newSection = new Section();
-					currentOutlinee.appendSection(newSection);
-					currentSection = newSection;
+					currentSection = new Section();
 					currentSection.heading = node;
+					currentOutlinee.appendSection(currentSection);
 				} else {
 					var candidateSection = currentSection;
 					do {
 						if(node.rank < candidateSection.heading.rank) {
-							var newSection = new Section();
-							candidateSection.appendChild(newSection);
-							currentSection = newSection;
+							currentSection = new Section();
 							currentSection.heading = node;
+							candidateSection.appendChild(currentSection);
 							break;
 						}
 						var newCandidate = candidateSection.parentSection;

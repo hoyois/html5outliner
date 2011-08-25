@@ -4,7 +4,6 @@ var url = document.getElementById("url_input").value;
 var text = document.getElementById("direct_input").value;
 var output = document.getElementById("output");
 output.innerHTML = "";
-var notes;
 
 // Options
 var deep = document.getElementById("deep_outline").checked;
@@ -25,12 +24,12 @@ if(text) {
 
 function processInput(source) {
 	try {
-		try{
-			processNode(parseXML(source));
-			return;
-		} catch(parserError) {
-			if(XML) { // Report XML error
-				if(parserError === true) throw new Error("Invalid XML");
+		var node;
+		if(XML) {
+			try{
+				node = parseXML(source);
+			} catch(parserError) {
+				if(!(parserError instanceof Node)) throw new Error("Invalid XML"); // Explorer
 				var errorDiv = parserError.getElementsByTagName("div")[0]; // WebKit
 				if(!errorDiv) errorDiv = parserError; // Mozilla, Opera
 				var error = new Error(errorDiv.textContent);
@@ -40,57 +39,60 @@ function processInput(source) {
 				if(match) error.column = parseInt(match[1]) - 1;
 				throw error;
 			}
+		} else {
+			try {
+				node = parseHTML(source);
+			} catch(error) {
+				throw new Error("This browser could not parse HTML input");
+			}
 		}
-		addNote("Used HTML parser");
-		try {
-			processNode(parseHTML(source));
-		} catch(error) {
-			throw new Error("Invalid HTML");
-		}
+		processNode(node);
 	} catch(error) {
 		output.appendChild(printError(error, source));
 	}
 }
 
 function processNode(node) {
-	HTMLOutline(node);
+	var body = getBody(node);
 	
-	var ownerDocument = node.nodeType === 9 ? node : node.ownerDocument;
-	var roots = getSectioningElements(node, deep);
-	if(roots.length === 0) { // create virtual root
-		var root = ownerDocument.createElement("body");
-		while(node.childNodes.length > 0) {
-			if(node.childNodes[0].nodeType === 10) node.removeChild(node.childNodes[0]);
-			else root.appendChild(node.childNodes[0]);
+	// Make outline
+	HTMLOutline(body);
+	
+	if(!deep) output.appendChild(printOutline(body.sectionList));
+	else {
+		var roots = getSectioningRoots(body);
+		for(var i = 0; i < roots.length; i++) {
+			var span = document.createElement("span");
+			span.className = "root";
+			span.textContent = "<" + roots[i].nodeName.toLowerCase() + ">";
+			output.appendChild(span);
+			output.appendChild(printOutline(roots[i].sectionList));
 		}
-		node.appendChild(root);
-		HTMLOutline(node);
-		roots = [root];
-		addNote("No sectioning element found: added <code>&lt;body&gt;</code>");
-	} else if(!deep && roots.length > 1) {
-		addNote("Several top-level sectioning root elements found");
 	}
-   
-	for(var i = 0; i < roots.length; i++) {
-		var span = document.createElement("span");
-		span.className = "root";
-		span.textContent = "<" + roots[i].nodeName.toLowerCase() + ">";
-		output.appendChild(span);
-		output.appendChild(printOutline(roots[i].sectionList));
-	}
-	
-	if(notes) output.appendChild(notes);
 }
 
-function addNote(html) {
-	if(!notes) {
-		notes = document.createElement("div");
-		notes.className = "notes";
-		notes.innerHTML = "<b>Notes</b><ol></ol>";
+function getBody(node) {
+	if(node.nodeType === 9) {
+		var body = node.getElementsByTagName("body")[0];
+		if(body === undefined) {
+			body = node.createElement("body");
+			while(node.childNodes.length > 0) {
+				if(node.childNodes[0].nodeType === 10) node.removeChild(node.childNodes[0]);
+				else body.appendChild(node.childNodes[0]);
+			}
+		}
+		return body;
+	} else if(node.nodeType === 11) {
+		for(var i = 0; i < node.childNodes.length; i++) {
+			if(node.childNodes[i].nodeType !== 1) continue;
+			if(node.childNodes[i].nodeName.toLowerCase() === "body") return node.childNodes[i];
+			var body = node.childNodes[i].getElementsByTagName("body")[0];
+			if(body !== undefined) return body;
+		}
+		var body = node.ownerDocument.createElement("body");
+		body.appendChild(node);
+		return body;
 	}
-	var li = document.createElement("li");
-	li.innerHTML = html;
-	notes.childNodes[1].appendChild(li);
 }
 
 function printOutline(outline) {
@@ -120,7 +122,7 @@ function printSection(section) {
 	details.style.display = "none";
 	var s = "";
 	if(section.associatedNodes[0].sectionType) s += "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>, ";
-	if(section.heading) s+= "rank: " + section.heading.rank + ", depth: " + section.heading.depth + ", ";
+	if(section.heading) s+= "rank: −" + (-section.heading.rank) + ", depth: " + section.heading.depth + ", ";
 	s+= "#nodes: " + section.associatedNodes.length;
 	details.innerHTML = s;
 	li.appendChild(details);
@@ -167,24 +169,21 @@ function printError(error, source) {
 	return div;
 }
 
-function getSectioningElements(root, deep) {
+function getSectioningRoots(body) {
 	var roots = new Array();
-	var node = root;
-	var stack = new Array();
+	var node = body;
 	start: while(node) {
-		if((node.sectionType && stack.length === 0) || (node.sectionType === 2 && deep)) roots.push(node);
-		if(node.sectionType === 2) stack.push(node);
-		if((!node.sectionType || deep) && node.firstChild) {
+		if(node.sectionType === 2) roots.push(node);
+		if(node.firstChild) {
 			node = node.firstChild;
 			continue start;
 		}
 		while(node) {
-			if(node === stack[stack.length - 1]) stack.pop();
+			if(node === body) break start;
 			if(node.nextSibling) {
 				node = node.nextSibling;
 				continue start;
 			}
-			if(node === root) break start;
 			node = node.parentNode;
 		}
 	}

@@ -3,6 +3,7 @@ function outline() {
 var url = document.getElementById("url_input").value;
 var text = document.getElementById("direct_input").value;
 var output = document.getElementById("output");
+output.innerHTML = "";
 var notes;
 
 // Options
@@ -11,91 +12,72 @@ var XML = document.getElementById("xml_parser").checked;
 
 // Direct input first
 if(text) {
-	processHTML((new DOMParser()).parseFromString(text, "text/xml"), text);
+	processInput(text);
 } else {
 	var xhr = new XMLHttpRequest();
 	xhr.open("GET", url, true);
 	xhr.onload = function() {
-		processHTML(xhr.responseXML, xhr.responseText);
+		processInput(xhr.responseText);
 	};
-	output.innerHTML = "<p>Fetching URL…</p>";
+	// output.innerHTML = "<p>Fetching URL…</p>";
 	xhr.send(null);
 }
 
-function parseHTML(xml, source) {
-	
-	var fragment;
-		
-	var parserError = xml.getElementsByTagName("parsererror")[0];
-	
-	if(!parserError) { // valid XML
-		fragment = xml.documentElement;
-	} else {
-		if(XML) { // Report XML error
-			var errorDiv = parserError.getElementsByTagName("div")[0];
-			if(!errorDiv) errorDiv = parserError;
-			var error = new Error(errorDiv.textContent);
-			var match = errorDiv.textContent.match(/line\s(\d+)/);
-			if(match) error.line = parseInt(match[1]) - 1;
-			match = errorDiv.textContent.match(/column\s(\d+)/);
-			if(match) error.column = parseInt(match[1]) - 1;
-			throw error;
-		}
-		
-		var html = document.implementation.createHTMLDocument("");
-		try {
-			if(/<body/i.test(source)) { // can't find another way to do it
-				html.documentElement.innerHTML = source;
-				fragment = html.body;
-			} else {
-				var range = html.createRange();
-				range.selectNode(html.body);
-				fragment = range.createContextualFragment(source);
+function processInput(source) {
+	try {
+		try{
+			processNode(parseXML(source));
+			return;
+		} catch(parserError) {
+			if(XML) { // Report XML error
+				if(parserError === true) throw new Error("Invalid XML");
+				var errorDiv = parserError.getElementsByTagName("div")[0]; // WebKit
+				if(!errorDiv) errorDiv = parserError; // Mozilla, Opera
+				var error = new Error(errorDiv.textContent);
+				var match = errorDiv.textContent.match(/line\s(\d+)/);
+				if(match) error.line = parseInt(match[1]) - 1;
+				match = errorDiv.textContent.match(/column\s(\d+)/);
+				if(match) error.column = parseInt(match[1]) - 1;
+				throw error;
 			}
-		} catch(error) {
-			throw new Error("Invalid HTML"); // (?) should not happen with HTML5 parsing algorithm
 		}
 		addNote("Used HTML parser");
-	}
-	return fragment;
-}
-
-function processHTML(xml, source) {
-	output.innerHTML = "";
-	try{
-		var fragment = parseHTML(xml, source);
+		try {
+			processNode(parseHTML(source));
+		} catch(error) {
+			throw new Error("Invalid HTML");
+		}
 	} catch(error) {
 		output.appendChild(printError(error, source));
-		return;
 	}
+}
+
+function processNode(node) {
+	HTMLOutline(node);
 	
-	var roots = getSectioningRoots(fragment, deep);
+	var ownerDocument = node.nodeType === 9 ? node : node.ownerDocument;
+	var roots = getSectioningElements(node, deep);
 	if(roots.length === 0) { // create virtual root
-		
-		var root = fragment.ownerDocument.createElement("body");
-		while(fragment.childNodes.length > 0) {
-			if(fragment.childNodes[0].nodeType === 10) fragment.removeChild(fragment.childNodes[0]);
-			else root.appendChild(fragment.childNodes[0]);
+		var root = ownerDocument.createElement("body");
+		while(node.childNodes.length > 0) {
+			if(node.childNodes[0].nodeType === 10) node.removeChild(node.childNodes[0]);
+			else root.appendChild(node.childNodes[0]);
 		}
-		root.isVirtual = true;
-		fragment.appendChild(root);
+		node.appendChild(root);
 		roots = [root];
-		addNote("No sectioning root element found: added virtual root");
+		addNote("No sectioning element found: added <code>&lt;body&gt;</code>");
 	} else if(!deep && roots.length > 1) {
 		addNote("Several top-level sectioning root elements found");
 	}
-	
-	HTMLOutline(fragment);
    
 	for(var i = 0; i < roots.length; i++) {
 		var span = document.createElement("span");
 		span.className = "root";
-		if(roots[i].isVirtual) span.className += " virtual";
 		span.textContent = "<" + roots[i].nodeName.toLowerCase() + ">";
 		output.appendChild(span);
 		output.appendChild(printOutline(roots[i].sectionList));
 	}
-   
+	
 	if(notes) output.appendChild(notes);
 }
 
@@ -132,22 +114,13 @@ function printSection(section) {
 		title.textContent = section.heading.text;
 	}
 	
-	var details = document.createElement("ul");
+	var details = document.createElement("div");
 	details.className = "details";
 	details.style.display = "none";
-	var type;
-	if(section.associatedNodes[0].sectionType === 1 || section.associatedNodes[0].sectionType === 2) {
-			type = "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>";
-	} else if(section.associatedNodes[0].sectionType === 2) {
-		type = "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>";
-	} else type ="Implied section";
 	var s = "";
-	if(type) s += "<li>" + type + "</li>";
-	if(section.heading) {
-		s+="<li>Heading rank: " + (section.heading.rank) + "</li>";
-		s+="<li>Heading depth: " + (section.heading.depth) + "</li>";
-	}
-	s+= "<li># of associated nodes: " + section.associatedNodes.length + "</li>";
+	if(section.associatedNodes[0].sectionType) s += "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>, ";
+	if(section.heading) s+= "rank: " + section.heading.rank + ", depth: " + section.heading.depth + ", ";
+	s+= "#nodes: " + section.associatedNodes.length;
 	details.innerHTML = s;
 	li.appendChild(details);
 	
@@ -193,31 +166,28 @@ function printError(error, source) {
 	return div;
 }
 
-function getSectioningRoots(xml, deep) {
+function getSectioningElements(root, deep) {
 	var roots = new Array();
-	var node = xml;
+	var node = root;
+	var stack = new Array();
 	start: while(node) {
-		var isRoot = isSectioningRoot(node);
-		if(isRoot) roots.push(node);
-		if((!isRoot || deep) && node.firstChild) {
+		if((node.sectionType && stack.length === 0) || (node.sectionType === 2 && deep)) roots.push(node);
+		if(node.sectionType === 2) stack.push(node);
+		if((!node.sectionType || deep) && node.firstChild) {
 			node = node.firstChild;
 			continue start;
 		}
 		while(node) {
+			if(node === stack[stack.length - 1]) stack.pop();
 			if(node.nextSibling) {
 				node = node.nextSibling;
 				continue start;
 			}
-			if(node === xml) break start;
+			if(node === root) break start;
 			node = node.parentNode;
 		}
 	}
 	return roots;
-}
-
-function isSectioningRoot(node) {
-	var t = node.nodeName.toLowerCase();
-	return t === "blockquote" || t === "body" || t === "details" || t === "fieldset" || t === "figure" || t === "td";
 }
 
 }

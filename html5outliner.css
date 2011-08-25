@@ -52,10 +52,6 @@ span.root {
 	margin-top: 1em;
 }
 
-span.root.virtual {
-	color: lightgray;
-}
-
 ol.outline {
 	margin: 0;
 	counter-reset: numsection;
@@ -95,7 +91,7 @@ span.show_details::before {
 	content: "▶";
 }
 
-ul.details {
+div.details {
 	font-size: small;
 	color: black;
 	background-color: lightgray;

@@ -64,6 +64,7 @@ function processNode(node) {
 			else root.appendChild(node.childNodes[0]);
 		}
 		node.appendChild(root);
+		HTMLOutline(node);
 		roots = [root];
 		addNote("No sectioning element found: added <code>&lt;body&gt;</code>");
 	} else if(!deep && roots.length > 1) {

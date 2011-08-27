@@ -1,6 +1,6 @@
 (function() {
 /*____BEGIN_OPTIONS____*/
-var numbering = 0001,linkColor = '', clickOutside = true, showDetails = false;
+var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false;
 /*_____END_OPTIONS_____*/
 
 /*_____BEGIN_CSS_____*/
@@ -158,7 +158,8 @@ if(clickOutside) {
 
 // Create outline
 var idCounter = 0;
-if(!document.body.sectionList) HTMLOutline(document.body);
+HTMLOutline(document.body);
+if(!document.body.sectionList) return; // HTML4 frameset documents
 inside.appendChild(printOutline(document.body.sectionList));
 toc.appendChild(inside);
 
@@ -199,7 +200,7 @@ function printSection(section) {
 	if(showDetails) {
 		var details = "";
 		if(section.associatedNodes[0].sectionType) details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">, ";
-		if(section.heading) details += "rank:" + section.heading.rank + ", depth:" + section.heading.depth + ", ";
+		if(section.heading) details += "rank:−" + (-section.heading.rank) + ", depth:" + section.heading.depth + ", ";
 		details += "#nodes:" + section.associatedNodes.length;
 		title.title = details;
 	}

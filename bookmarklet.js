@@ -138,7 +138,6 @@ toc.id = "h5o-outside";
 
 // Stylesheet
 var style = document.createElement("style");
-style.type = "text/css";
 toc.appendChild(style);
 document.body.appendChild(toc);
 
@@ -212,7 +211,7 @@ function printSection(section) {
 // Section class
 function Section() {
 	this.parentSection = null;
-	this.childSections = new Array();
+	this.childSections = [];
 	this.firstChild = null;
 	this.lastChild = null;
 	this.appendChild = function(section) {
@@ -224,7 +223,7 @@ function Section() {
 
 	this.heading = null; // heading element associated with the section, if any
 
-	this.associatedNodes = new Array(); // DOM nodes associated with the section
+	this.associatedNodes = []; // DOM nodes associated with the section
 }
 
 // Main function
@@ -388,7 +387,7 @@ function HTMLOutline(root) {
 	
 	function extendSectioningElement(node) {
 		extendNode(node);
-		node.sectionList = new Array();
+		node.sectionList = [];
 		node.firstSection = null;
 		node.lastSection = null;
 		

@@ -111,8 +111,19 @@ function printSection(section) {
 	li.appendChild(title);
 	
 	if(section.heading === null) {
-		title.textContent = "Untitled section";
-		title.style.fontStyle = "italic";
+		switch(section.associatedNodes[0].nodeName.toLowerCase()) {
+			case "blockquote": title.textContent = "Quoted content"; break;
+			case "body": title.textContent = "Document"; break;
+			case "details": title.textContent = "Widget"; break;
+			case "fieldset": title.textContent = "Form controls"; break;
+			case "figure": title.textContent = "Figure"; break;
+			case "td": title.textContent = "Data cell"; break;
+			case "article": title.textContent = "Article"; break;
+			case "aside": title.textContent = "Aside"; break;
+			case "nav": title.textContent = "Navigation"; break;
+			case "section": title.textContent = "Section"; break;
+		}
+		title.className += " no_title";
 	} else {
 		title.textContent = section.heading.text;
 	}

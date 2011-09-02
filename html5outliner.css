@@ -46,14 +46,8 @@ p.error {
 	white-space: pre-wrap;
 }
 
-span.root {
-	display: block;
-	font-family: monospace;
-	margin-top: 1em;
-}
-
 ol.outline {
-	margin: 0;
+	margin: 1em 0;
 	counter-reset: numsection;
 	list-style-type: none;
 	padding-left: 32px;

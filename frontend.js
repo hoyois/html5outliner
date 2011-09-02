@@ -62,10 +62,6 @@ function processNode(node) {
 	else {
 		var roots = getSectioningRoots(body);
 		for(var i = 0; i < roots.length; i++) {
-			var span = document.createElement("span");
-			span.className = "root";
-			span.textContent = "<" + roots[i].nodeName.toLowerCase() + ">";
-			output.appendChild(span);
 			output.appendChild(printOutline(roots[i].sectionList));
 		}
 	}

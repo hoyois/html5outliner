@@ -39,6 +39,7 @@ span.error_caret {
 }
 
 #output > ol {
+	margin: 1em 0;
 	padding-left: 0;
 }
 
@@ -47,7 +48,6 @@ p.error {
 }
 
 ol.outline {
-	margin: 1em 0;
 	counter-reset: numsection;
 	list-style-type: none;
 	padding-left: 32px;

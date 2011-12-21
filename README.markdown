@@ -20,15 +20,3 @@ The function `HTMLOutline` adds several properties to the nodes in the DOM subtr
 * `text` is the [text](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-hgroup-element) of a heading content element;
 * `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element;
 * `depth` is the [depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element.
-
-## Note on the outline algorithm
-
-The outline algorithm only produces the correct result when the input is a sectioning element, and the steps 5 and 6 of the algorithm are vacuous. One can try to apply the algorithm directly to an arbitrary node, but it only produces the outline of the first sectioning descendent of the node and associates unrelated nodes to the first section of that outline. For example, if the algorithm is applied to
-
-	<div>
-		<section></section>
-		<section></section>
-		<h1></h1>
-	</div>
-	
-only one section is created for the first `section` element, and all nodes are associated with that section. Applying the `HTMLOutline` function, however, results in two sections being created, each associated with a `section` element, and no other node is associated to a section.

@@ -203,7 +203,7 @@ function HTMLOutline(root) {
 				while(section = section.parentSection) ++depth;
 			}
 			return depth;
-		}});
+		}, "configurable": true, "enumerable": true});
 	}
 	
 	function extendHeadingElement(node) {

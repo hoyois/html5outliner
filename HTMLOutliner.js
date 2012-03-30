@@ -46,8 +46,7 @@ function HTMLOutline(root) {
 	function enter(node) {
 		if(isElement(node)) {
 			if(!stack.isEmpty && isHeadingElement(stack.top)) {
-				// Depth computation (not part of algorithm)
-				if(isHeadingElement(node)) node.depth = stack.top.depth;
+				// Do nothing
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
 				// if(currentOutlinee !== null && !currentSection.heading) {
 					// Algorithm says to "create implied heading" here, which is pointless:
@@ -80,9 +79,6 @@ function HTMLOutline(root) {
 					} while(true);
 				}
 				stack.push(node);
-				// Depth computation (not part of algorithm)
-				var s = currentSection;
-				while((s = s.parentSection) !== null) ++node.depth;
 			} // else {
 				// Do nothing
 			// }
@@ -200,7 +196,14 @@ function HTMLOutline(root) {
 	
 	function extendHeadingContentElement(node) {
 		extendNode(node);
-		node.depth = 1;
+		Object.defineProperty(node, "depth", {"get": function(){
+			var section = node.associatedSection;
+			var depth = 1;
+			if(section !== null) {
+				while(section = section.parentSection) ++depth;
+			}
+			return depth;
+		}});
 	}
 	
 	function extendHeadingElement(node) {

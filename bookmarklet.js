@@ -121,7 +121,7 @@ if(!window.h5o_sdWoNJpsAgQGAaf) window.h5o_sdWoNJpsAgQGAaf = function() {
 	document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
 	var i = 0;
 	var e;
-	while(e = document.getElementById("h5o-id-" + i)) {
+	while(!!(e = document.getElementById("h5o-id-" + i))) {
 		e.removeAttribute("id");
 		++i;
 	}
@@ -175,7 +175,7 @@ function printSection(section) {
 	var li = document.createElement("li");
 	var title = document.createElement("a");
 	li.appendChild(title);
-	
+    
 	if(section.heading === null || /^[ \r\n\t]*$/.test(section.heading.text)) {
 		li.className = "h5o-notitle";
 		switch(section.associatedNodes[0].nodeName.toLowerCase()) {
@@ -196,6 +196,12 @@ function printSection(section) {
 	}
 	title.href = "#" + node.id;
 	
+    title.addEventListener('click', function( e ){
+        e.preventDefault();
+        node.scrollIntoView();
+    }, true);
+    
+    
 	if(showDetails) {
 		var details = "";
 		if(section.associatedNodes[0].sectionType) details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">, ";
@@ -211,7 +217,7 @@ function printSection(section) {
 // Section class
 function Section() {
 	this.parentSection = null;
-	this.childSections = new Array();
+	this.childSections = [];
 	this.firstChild = null;
 	this.lastChild = null;
 	this.appendChild = function(section) {
@@ -223,7 +229,7 @@ function Section() {
 
 	this.heading = null; // heading element associated with the section, if any
 
-	this.associatedNodes = new Array(); // DOM nodes associated with the section
+	this.associatedNodes = []; // DOM nodes associated with the section
 }
 
 // Main function
@@ -383,7 +389,7 @@ function HTMLOutline(root) {
 	
 	function extendSectioningElement(node) {
 		extendNode(node);
-		node.sectionList = new Array();
+		node.sectionList = [];
 		node.firstSection = null;
 		node.lastSection = null;
 		
@@ -410,7 +416,7 @@ function HTMLOutline(root) {
 			var section = node.associatedSection;
 			var depth = 1;
 			if(section !== null) {
-				while(section = section.parentSection) ++depth;
+				while( !!(section = section.parentSection)) ++depth;
 			}
 			return depth;
 		}, "configurable": true, "enumerable": true});
@@ -418,7 +424,7 @@ function HTMLOutline(root) {
 	
 	function extendHeadingElement(node) {
 		extendHeadingContentElement(node);
-		node.rank = -parseInt(node.nodeName.charAt(1));
+		node.rank = -parseInt(node.nodeName.charAt(1),10);
 		node.text = node.textContent;
 	}
 	

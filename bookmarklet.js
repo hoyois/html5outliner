@@ -119,12 +119,6 @@ else CSSRules.push("#h5o-inside>ol>li{margin-left:0;}");
 // This must be global so that event listener can be removed when clicking on bookmarklet again
 if(!window.h5o_sdWoNJpsAgQGAaf) window.h5o_sdWoNJpsAgQGAaf = function() {
 	document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
-	var i = 0;
-	var e;
-	while(e = document.getElementById("h5o-id-" + i)) {
-		e.removeAttribute("id");
-		++i;
-	}
 	document.body.removeChild(document.getElementById("h5o-outside"));
 };
 
@@ -156,7 +150,6 @@ if(clickOutside) {
 }
 
 // Create outline
-var idCounter = 0;
 HTMLOutline(document.body);
 if(!document.body.sectionList) return; // HTML4 frameset documents
 inside.appendChild(printOutline(document.body.sectionList));
@@ -190,11 +183,12 @@ function printSection(section) {
 	
 	var node = section.associatedNodes[0];
 	if(node.sectionType !== 1 && node.sectionType !== 2) node = section.heading;
-	if(!node.id) {
-		node.id = "h5o-id-" + idCounter;
-		++idCounter;
-	}
 	title.href = "#" + node.id;
+	
+	title.addEventListener("click", function(event) {
+		event.preventDefault();
+		node.scrollIntoView();
+	}, false);
 	
 	if(showDetails) {
 		var details = "";
@@ -211,7 +205,7 @@ function printSection(section) {
 // Section class
 function Section() {
 	this.parentSection = null;
-	this.childSections = new Array();
+	this.childSections = [];
 	this.firstChild = null;
 	this.lastChild = null;
 	this.appendChild = function(section) {
@@ -223,7 +217,7 @@ function Section() {
 
 	this.heading = null; // heading element associated with the section, if any
 
-	this.associatedNodes = new Array(); // DOM nodes associated with the section
+	this.associatedNodes = []; // DOM nodes associated with the section
 }
 
 // Main function
@@ -252,15 +246,15 @@ function HTMLOutline(root) {
 	};
 	
 	// STEP 4 (minus DOM walk which is at the end)
-	// The following functions implement word for word the substeps of step 4
 	function enter(node) {
 		if(isElement(node)) {
-			if(!stack.isEmpty && isHeadingElement(stack.top)) {
+			if(!stack.isEmpty && (isHeadingElement(stack.top) || isHidden(stack.top))) {
 				// Do nothing
+			} else if(isHidden(node)) {
+				stack.push(node);
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
-				// if(currentOutlinee !== null && !currentSection.heading) {
-					// Algorithm says to "create implied heading" here, which is pointless:
-					// a section has an "implied heading" iff it has no explicit heading
+				// if(currentOutlinee !== null && currentSection.heading === null) {
+					// Create implied heading
 				// }
 				if(currentOutlinee !== null) stack.push(currentOutlinee);
 				currentOutlinee = node;
@@ -271,7 +265,7 @@ function HTMLOutline(root) {
 				// Do nothing
 			} else if(isHeadingElement(node)) {
 				if(currentSection.heading === null) currentSection.heading = node;
-				else if(node.rank >= currentOutlinee.lastSection.heading.rank) {
+				else if(currentOutlinee.lastSection.heading === null || node.rank >= currentOutlinee.lastSection.heading.rank) {
 					currentSection = new Section();
 					currentSection.heading = node;
 					currentOutlinee.appendSection(currentSection);
@@ -298,40 +292,43 @@ function HTMLOutline(root) {
 	function exit(node) {
 		if(isElement(node)) {
 			if(!stack.isEmpty && node === stack.top) stack.pop();
-			else if(!stack.isEmpty && isHeadingElement(stack.top)) {
+			else if(!stack.isEmpty && (isHeadingElement(stack.top) || isHidden(stack.top))) {
 				// Do nothing
 			} else if(!stack.isEmpty && isSectioningContentElement(node)) {
+				// if(currentSection.heading === null) {
+					// Create implied heading
+				// }
 				currentOutlinee = stack.pop();
 				currentSection = currentOutlinee.lastSection;
 				for(var i = 0; i < node.sectionList.length; i++) {
 					currentSection.appendChild(node.sectionList[i]);
 				}
 			} else if(!stack.isEmpty && isSectioningRootElement(node)) {
+				// if(currentSection.heading === null) {
+					// Create implied heading
+				// }
 				currentOutlinee = stack.pop();
 				currentSection = currentOutlinee.lastSection;
 				while(currentSection.childSections.length > 0) {
 					currentSection = currentSection.lastChild;
 				}
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
+				// if(currentSection.heading === null) {
+					// Create implied heading
+				// }
 				// The algorith says to end the walk here, but that's assuming root is a sectioning element
 				// Instead we reset the algorithm for subsequent top-level sectioning elements
 				currentOutlinee = null;
 				currentSection = null;
-			} // else if(currentOutlinee === null) {
-				// Do nothing
-			// } else {
+			} // else {
 				// Do nothing
 			// }
 		}
 		if(node.associatedSection === null && currentSection !== null) associateNodeWithSection(node, currentSection);
 	}
 	
-	// STEP 5 and 6
-	// Vacuous steps
-	// STEP 7
+	// STEP 5
 	// The heading associated to node is node.associatedSection.heading, if any
-	// STEP 8
-	// Nothing to do
 	// END OUTLINE ALGORITHM
 	
 	// Now we must make the necessary definitions for the above to make sense
@@ -342,6 +339,10 @@ function HTMLOutline(root) {
 	
 	function isElement(node) {
 		return node.nodeType === 1;
+	}
+	
+	function isHidden(node) {
+		return node.hidden;
 	}
 	
 	function isSectioningContentElement(node) {
@@ -383,7 +384,7 @@ function HTMLOutline(root) {
 	
 	function extendSectioningElement(node) {
 		extendNode(node);
-		node.sectionList = new Array();
+		node.sectionList = [];
 		node.firstSection = null;
 		node.lastSection = null;
 		

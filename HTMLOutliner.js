@@ -27,24 +27,25 @@ function HTMLOutline(root) {
 	
 	// STEP 3
 	// Minimal stack object
-	var stack = {"lastIndex": -1, "isEmpty": true};
+	var stack = {"lastIndex": -1};
+	stack.isEmpty = function() {
+		return stack.lastIndex === -1;
+	};
 	stack.push = function(e) {
 		stack[++stack.lastIndex] = e;
 		stack.top = e;
-		stack.isEmpty = false;
 	};
 	stack.pop = function() {
 		var e = stack.top;
 		delete stack[stack.lastIndex--];
-		if(stack.lastIndex === -1) stack.isEmpty = true;
-		else stack.top = stack[stack.lastIndex];
+		stack.top = stack[stack.lastIndex];
 		return e;
 	};
 	
 	// STEP 4 (minus DOM walk which is at the end)
 	function enter(node) {
 		if(isElement(node)) {
-			if(!stack.isEmpty && (isHeadingElement(stack.top) || isHidden(stack.top))) {
+			if(!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
 				// Do nothing
 			} else if(isHidden(node)) {
 				stack.push(node);
@@ -87,10 +88,10 @@ function HTMLOutline(root) {
 	
 	function exit(node) {
 		if(isElement(node)) {
-			if(!stack.isEmpty && node === stack.top) stack.pop();
-			else if(!stack.isEmpty && (isHeadingElement(stack.top) || isHidden(stack.top))) {
+			if(!stack.isEmpty() && node === stack.top) stack.pop();
+			else if(!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
 				// Do nothing
-			} else if(!stack.isEmpty && isSectioningContentElement(node)) {
+			} else if(!stack.isEmpty() && isSectioningContentElement(node)) {
 				// if(currentSection.heading === null) {
 					// Create implied heading
 				// }
@@ -99,7 +100,7 @@ function HTMLOutline(root) {
 				for(var i = 0; i < node.sectionList.length; i++) {
 					currentSection.appendChild(node.sectionList[i]);
 				}
-			} else if(!stack.isEmpty && isSectioningRootElement(node)) {
+			} else if(!stack.isEmpty() && isSectioningRootElement(node)) {
 				// if(currentSection.heading === null) {
 					// Create implied heading
 				// }
@@ -203,7 +204,7 @@ function HTMLOutline(root) {
 	
 	function extendHeadingContentElement(node) {
 		extendNode(node);
-		Object.defineProperty(node, "depth", {"get": function(){
+		Object.defineProperty(node, "depth", {"get": function() {
 			var section = node.associatedSection;
 			var depth = 1;
 			if(section !== null) {

@@ -361,7 +361,7 @@ function HTMLOutline(root) {
 	function extend(node) {
 		if(node.nodeType === 1) {
 			switch(node.nodeName.toLowerCase()) {
-				case "blockquote": case "body": case "details": case "fieldset": case "figure": case "td":
+				case "blockquote": case "body": case "details": case "dialog": case "fieldset": case "figure": case "td":
 					extendSectioningRootElement(node);
 					break;
 				case "article": case "aside": case "nav": case "section":

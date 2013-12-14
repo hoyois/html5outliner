@@ -162,7 +162,7 @@ function HTMLOutline(root) {
 	}
 	
 	function createImpliedHeading(section) {
-		section.heading === null;
+		section.heading = null;
 	}
 	
 	// Types of nodes

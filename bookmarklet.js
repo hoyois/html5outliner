@@ -6,9 +6,7 @@ var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false;
 /*_____BEGIN_CSS_____*/
 var CSSRules = [
 	// CSS reset (except: text-rendering, link color)
-	// directional properties should not be reset, but no browser implements
-	// the abstractions of the CSS3 writing mode module
-	// and not setting direction:ltr breaks the layout...
+	// TODO: directional properties should not be reset
 	"#h5o-outside,#h5o-outside *{\
 		background-color:transparent;\
 		border:none;\
@@ -181,8 +179,7 @@ function printSection(section) {
 		}
 	} else title.textContent = section.heading.text;
 	
-	var node = section.associatedNodes[0];
-	if(node.sectionType !== 1 && node.sectionType !== 2) node = section.heading;
+	var node = section.explicit ? section.associatedNodes[0] : section.heading;
 	title.href = "#" + node.id;
 	
 	title.addEventListener("click", function(event) {
@@ -192,9 +189,9 @@ function printSection(section) {
 	
 	if(showDetails) {
 		var details = "";
-		if(section.associatedNodes[0].sectionType) details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">, ";
-		if(section.heading) details += "rank:−" + (-section.heading.rank) + ", depth:" + section.heading.depth + ", ";
-		details += "#nodes:" + section.associatedNodes.length;
+		if(section.explicit) details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">";
+		if(section.heading) details += "<h" + (-section.heading.rank) + ">";
+		details += ", " + section.associatedNodes.length + " nodes";
 		title.title = details;
 	}
 	

@@ -38,29 +38,25 @@ span.error_caret {
 	background-color: #BBB;
 }
 
-#output > ol {
-	margin: 1em 0;
-	padding-left: 0;
-}
-
 p.error {
 	white-space: pre-wrap;
+}
+
+ol {
+	padding-left: 25px;
+}
+
+#output > ol {
+	padding-left: 0;
 }
 
 ol.outline {
 	counter-reset: numsection;
 	list-style-type: none;
-	padding-left: 32px;
 }
 
 ol.outline > li {
 	counter-increment: numsection;
-	text-indent: -12px;
-	padding-left: 12px;
-}
-
-ol.outline > li > * {
-	text-indent: 0;
 }
 
 span.sec_title::before {
@@ -72,51 +68,13 @@ span.no_title {
 	font-style: italic;
 }
 
-span.show_details, span.hide_details {
-	cursor: default;
-	font-family: "Apple Symbols", "Menlo", "Arial Unicode MS", monospace;
-	font-size: 12px;
-	display: inline-block;
-	width: 12px;
+span.details {
+	visibility: hidden;
 	color: gray;
+	padding-left: 1ex;
 }
 
-span.hide_details::before {
-	content: "▼";
-}
-
-span.show_details::before {
-	content: "▶";
-}
-
-div.details {
-	font-size: small;
-	color: black;
-	background-color: #EEE;
-	padding: 4px;
-	border-radius: 4px;
-	list-style-type: none;
-	width: intrinsic;
-	margin: 2px 0 2px 0;
-}
-
-div.notes {
-	font-size: small;
-	counter-reset: note;
-	margin: 1em 0;
-}
-
-div.notes > ol {
-	margin-top: 0;
-	padding-left: 0;
-}
-
-div.notes > ol > li {
-	counter-increment: note;
-	list-style-type: none;
-}
-
-div.notes > ol > li::before {
-	content: counter(note) ". ";
+ol.outline:hover span.details {
+	visibility: visible;
 }
 

@@ -111,11 +111,12 @@ function printSection(section) {
 			case "blockquote": title.textContent = "Quoted content"; break;
 			case "body": title.textContent = "Document"; break;
 			case "details": title.textContent = "Widget"; break;
+			case "dialog": title.textContent = "Application"; break;
 			case "fieldset": title.textContent = "Form controls"; break;
 			case "figure": title.textContent = "Figure"; break;
 			case "td": title.textContent = "Data cell"; break;
 			case "article": title.textContent = "Article"; break;
-			case "aside": title.textContent = "Aside"; break;
+			case "aside": title.textContent = "Sidebar"; break;
 			case "nav": title.textContent = "Navigation"; break;
 			case "section": title.textContent = "Section"; break;
 		}
@@ -124,28 +125,14 @@ function printSection(section) {
 		title.textContent = section.heading.text;
 	}
 	
-	var details = document.createElement("div");
+	var details = document.createElement("span");
 	details.className = "details";
-	details.style.display = "none";
-	var s = "";
-	if(section.associatedNodes[0].sectionType) s += "<code>&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;</code>, ";
-	if(section.heading) s+= "rank: −" + (-section.heading.rank) + ", depth: " + section.heading.depth + ", ";
-	s+= "#nodes: " + section.associatedNodes.length;
+	var s = "<code>";
+	if(section.explicit) s += "&lt;" + section.associatedNodes[0].nodeName.toLowerCase() + "&gt;";
+	if(section.heading) s += "&lt;h" + (-section.heading.rank) + "&gt;";
+	s += "</code>";
 	details.innerHTML = s;
 	li.appendChild(details);
-	
-	var triangle = document.createElement("span");
-	triangle.className = "show_details";
-	triangle.addEventListener("click", function() {
-		if(this.className === "show_details") {
-			this.className = "hide_details";
-			details.style.display = "block";
-		} else {
-			this.className = "show_details";
-			details.style.display = "none";
-		}
-	}, false);
-	li.insertBefore(triangle, li.firstChild);
 	
 	li.appendChild(printOutline(section.childSections));
 	return li;

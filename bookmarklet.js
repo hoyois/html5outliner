@@ -383,6 +383,10 @@ function HTMLOutline(root) {
 		return ["article", "aside", "nav", "section"].indexOf(node.nodeName.toLowerCase()) !== -1;
 	}
 	
+	function isSectioningElement(node) {
+		return isSectioningRootElement(node) || isSectioningContentElement(node);
+	}
+	
 	function isHeadingElement(node) {
 		return ["h1", "h2", "h3", "h4", "h5", "h6"].indexOf(node.nodeName.toLowerCase()) !== -1;
 	}
@@ -397,17 +401,10 @@ function HTMLOutline(root) {
 	
 	// Add properties to DOM nodes
 	function extend(node) {
-		if(isSectioningRootElement(node)) {
-			extendSectioningRootElement(node);
-		} else if(isSectioningContentElement(node)) {
-			extendSectioningContentElement(node);
-		} else if(isHeadingElement(node)) {
-			extendHeadingElement(node);
-		} else if(isHeadingGroupElement(node)) {
-			extendHeadingGroupElement(node);
-		} else {
-			extendNode(node);
-		}
+		if(isSectioningElement(node)) extendSectioningElement(node);
+		else if(isHeadingElement(node)) extendHeadingElement(node);
+		else if(isHeadingGroupElement(node)) extendHeadingGroupElement(node);
+		else extendNode(node);
 	}
 	
 	function extendNode(node) {
@@ -425,16 +422,6 @@ function HTMLOutline(root) {
 			if(this.firstSection === null) this.firstSection = section;
 			this.lastSection = section;
 		};
-	}
-	
-	function extendSectioningContentElement(node) {
-		extendSectioningElement(node);
-		node.sectionType = 1;
-	}
-	
-	function extendSectioningRootElement(node) {
-		extendSectioningElement(node);
-		node.sectionType = 2;
 	}
 	
 	function extendHeadingContentElement(node) {

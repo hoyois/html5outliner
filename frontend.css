@@ -8,11 +8,19 @@
 	width: 48%;
 }
 
+#input_options {
+	text-align: right;
+}
+
 button {
 	font-size: 13px;
 	position: absolute;
 	right: 0;
 	top: 0;
+}
+
+div.options {
+	margin: 1em 0 1em 0;
 }
 
 textarea {
@@ -51,17 +59,44 @@ ol {
 }
 
 ol.outline {
-	counter-reset: numsection;
 	list-style-type: none;
 }
 
-ol.outline > li {
-	counter-increment: numsection;
+ol.outline.shadow {
+	border-left: 1px solid gray;
+	margin: 2px;
+	padding-left: 10px;
 }
 
-span.sec_title::before {
-	content: counters(numsection, ".") ". ";
+span.sec_number {
+	display: inline;
 	font-weight: bold;
+	padding-right: 1ex;
+}
+
+span.sec_prefix {
+	display: none;
+}
+
+#output[data-numbering="0"] span.sec_number {
+	display: none;
+}
+
+#output[data-numbering="2"] span.sec_prefix {
+	display: inline;
+}
+
+li.root {
+	display: none;
+}
+
+#output.show_roots li.root {
+	display: block;
+}
+
+li.root > span {
+	color: gray;
+	font-variant: small-caps;
 }
 
 span.no_title {
@@ -69,12 +104,12 @@ span.no_title {
 }
 
 span.details {
-	visibility: hidden;
+	display: none;
 	color: gray;
 	padding-left: 1ex;
 }
 
-ol.outline:hover span.details {
-	visibility: visible;
+#output.show_elements span.details {
+	display: inline;
 }
 

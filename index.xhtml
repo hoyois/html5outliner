@@ -5,7 +5,7 @@
 	<meta name="description" content="HTML5 outliner service"/>
 	<title>HTML5 Outliner</title>
 	<link rel="stylesheet" href="../styles.css"/>
-	<link rel="stylesheet" href="html5outliner.css"/>
+	<link rel="stylesheet" href="frontend.css"/>
 	<script src="https://raw.github.com/hoyois/html5outliner/master/HTMLOutliner.js"></script>
 	<script src="HTMLParser.js"></script>
 	<script src="frontend.js"></script>
@@ -31,6 +31,10 @@
 <button onclick="outline();">Show outline &gt;</button>
 </header>
 
+<div class="options" id="input_options">
+	<input id="xml_parser" type="checkbox"/><label for="xml_parser">Parse as XML</label>
+</div>
+
 <input id="url_input" type="hidden" value=""/>
 <textarea id="direct_input">&lt;body&gt;
 	&lt;h4&gt;Apples&lt;/h4&gt;
@@ -45,8 +49,6 @@
 		&lt;p&gt;Apples come in various colors.&lt;/p&gt;
 	&lt;/section&gt;
 &lt;/body&gt;</textarea>
-<p class="option"><input id="deep_outline" type="checkbox"/><label for="deep_outline">Show the outlines of all sectioning roots</label></p>
-<p class="option"><input id="xml_parser" type="checkbox"/><label for="xml_parser">Parse as XML</label></p>
 
 </section>
 
@@ -54,15 +56,28 @@
 <section id="outline">
 <h2>Outline</h2>
 
-<div id="output">
+<div class="options" id="output_options">
+	Numbering:
+	<select id="numbering">
+		<option value="0">None</option>
+		<option value="1" selected="">Simple</option>
+		<option value="2">Nested</option>
+	</select>
+	Show:
+	<input id="show_elements" type="checkbox"/><label for="show_elements">Elements</label>
+	<input id="show_roots" type="checkbox"/><label for="show_roots">All sectioning roots</label>
+</div>
+
+<div id="output" data-numbering="1">
 </div>
 </section>
 
-<script type="text/javascript" src="checkQuery.js"></script>
+<script src="checkQuery.js"></script>
+<script src="outputOptions.js"></script>
 <div style="clear: both;"></div>
 
 <footer>
-<p id="footer_left">Marc Hoyois, <time datetime="2013-12-14">December 14, 2013</time></p>
+<p id="footer_left">Marc Hoyois, <time datetime="2013-12-15">December 15, 2013</time></p>
 </footer>
 
 </body>

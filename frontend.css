@@ -8,8 +8,8 @@
 	width: 48%;
 }
 
-#input_options {
-	text-align: right;
+#input_options p {
+	margin: 0;
 }
 
 button {
@@ -34,12 +34,12 @@ input[type="text"] {
 	margin-bottom: 1em;
 }
 
-p.option {
-	margin: 0;
-}
-
 input[type="checkbox"] {
 	margin-right: 1ex;
+}
+
+select {
+	margin-right: 1em;
 }
 
 span.error_caret {

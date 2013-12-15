@@ -22,7 +22,7 @@
 <div id="intro">
 	<p>This is a rudimentary front-end for my implementation of the <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline">HTML outline algorithm</a>. See the <a href="https://github.com/hoyois/html5outliner">GitHub repository page</a> for technical details, and the <a href="../#bookmarklets">Home page</a> for a handy bookmarklet.</p>
 	
-	<p>Due to the limitations of working client-side, only direct text input is supported. If the input does not contain a <code>&lt;body&gt;</code> tag, an enclosing <code>&lt;body&gt;</code> element is created to compute the outline. Otherwise the outline of the first <code>&lt;body&gt;</code> element is shown.</p>
+	<p>Due to the limitations of working client-side, URL input is not supported. If the input does not contain a <code>&lt;body&gt;</code> tag, an enclosing <code>&lt;body&gt;</code> element is created to compute the outline. Otherwise the outline of the first <code>&lt;body&gt;</code> element is shown.</p>
 </div>
 
 <section id="input">
@@ -32,10 +32,12 @@
 </header>
 
 <div class="options" id="input_options">
-	<input id="xml_parser" type="checkbox"/><label for="xml_parser">Parse as XML</label>
+	<input id="url_input" type="hidden" value=""/>
+	<p style="float: left;"><input type="file" id="file_input"/></p>
+	<p style="float: right;"><input id="xml_parser" type="checkbox"/><label for="xml_parser">Parse as XML</label></p>
+	<div style="clear: both;"></div>
 </div>
 
-<input id="url_input" type="hidden" value=""/>
 <textarea id="direct_input">&lt;body&gt;
 	&lt;h4&gt;Apples&lt;/h4&gt;
 	&lt;p&gt;Apples are fruit.&lt;/p&gt;
@@ -73,7 +75,7 @@
 </section>
 
 <script src="checkQuery.js"></script>
-<script src="outputOptions.js"></script>
+<script src="options.js"></script>
 <div style="clear: both;"></div>
 
 <footer>

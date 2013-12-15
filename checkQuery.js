@@ -14,7 +14,6 @@ if(location.search) {
 		document.getElementById("direct_input").value = "";
 	}
 	if(queryOptions.input) document.getElementById("direct_input").value = decodeURIComponent(queryOptions.input);
-	if(queryOptions.deep !== undefined) document.getElementById("deep_outline").checked = true;
 	if(queryOptions.xml !== undefined) document.getElementById("xml_parser").checked = true;
 	
 	if(queryOptions.url || queryOptions.input) outline();

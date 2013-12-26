@@ -83,14 +83,12 @@ function processNode(node) {
 	// Add outlines of all sectioning roots to the main outline
 	var roots = getSectioningRoots(body);
 	for(var i = 1; i < roots.length; i++) {
-		// figure out where the sectioning root is in the outline
-		var neighbor = roots[i].previousSibling || roots[i].parentNode;
-		var section = neighbor.associatedSection;
+		// Figure out where the sectioning root is in the outline
+		var section = roots[i].parentSection;
 		var position = 0;
-		
-		while(section.childSections.length > position
-			&& (section.childSections[position].root
-			|| (section.childSections[position].associatedNodes[0].compareDocumentPosition(roots[i]) & Node.DOCUMENT_POSITION_FOLLOWING))) ++position;
+		while(section.childSections.length > position && (section.childSections[position].root || (section.childSections[position].associatedNodes[0].compareDocumentPosition(roots[i]) & Node.DOCUMENT_POSITION_FOLLOWING))) {
+				++position;
+			}
 		section.childSections.splice(position, 0, {
 			"root": true,
 			"childSections": roots[i].sectionList
@@ -142,24 +140,26 @@ function printSection(section) {
 	
 	// Section title
 	var title = document.createElement("span");
-	title.className = "sec_title";
 	li.appendChild(title);
 	
 	if(section.heading === null) {
 		switch(section.associatedNodes[0].nodeName.toLowerCase()) {
-			case "blockquote": title.textContent = "Quoted content"; break;
-			case "body": title.textContent = "Document"; break;
-			case "details": title.textContent = "Widget"; break;
-			case "dialog": title.textContent = "Application"; break;
-			case "fieldset": title.textContent = "Form controls"; break;
-			case "figure": title.textContent = "Figure"; break;
-			case "td": title.textContent = "Data cell"; break;
-			case "article": title.textContent = "Article"; break;
-			case "aside": title.textContent = "Sidebar"; break;
-			case "nav": title.textContent = "Navigation"; break;
-			case "section": title.textContent = "Section"; break;
+		case "blockquote": title.textContent = "Quoted content"; break;
+		case "body": title.textContent = "Document"; break;
+		case "details": title.textContent = "Widget"; break;
+		case "dialog": title.textContent = "Application"; break;
+		case "fieldset": title.textContent = "Form controls"; break;
+		case "figure": title.textContent = "Figure"; break;
+		case "td": title.textContent = "Data cell"; break;
+		case "article": title.textContent = "Article"; break;
+		case "aside": title.textContent = "Sidebar"; break;
+		case "nav": title.textContent = "Navigation"; break;
+		case "section": title.textContent = "Section"; break;
 		}
-		title.className += " no_title";
+		title.className = "no_title";
+	} else if(/^[ \r\n\t]*$/.test(section.heading.text)) { // CSS whitespace
+		title.textContent = "Empty title";
+		title.className = "no_title";
 	} else {
 		title.textContent = section.heading.text;
 	}

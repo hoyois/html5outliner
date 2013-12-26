@@ -274,8 +274,10 @@ function HTMLOutline(root) {
 			} else if(isHidden(node)) {
 				stack.push(node);
 			} else if(isSectioningContentElement(node)) {
-				if(currentOutlinee !== null && hasNoHeading(currentSection)) createImpliedHeading(currentSection);
-				if(currentOutlinee !== null) stack.push(currentOutlinee);
+				if(currentOutlinee !== null) {
+					if(hasNoHeading(currentSection)) createImpliedHeading(currentSection);
+					stack.push(currentOutlinee);
+				}
 				currentOutlinee = node;
 				currentSection = new Section(true);
 				associateNodeWithSection(currentOutlinee, currentSection);
@@ -283,11 +285,13 @@ function HTMLOutline(root) {
 			} else if(isSectioningRootElement(node)) {
 				if(currentOutlinee !== null) stack.push(currentOutlinee);
 				currentOutlinee = node;
+				currentOutlinee.parentSection = currentSection;
 				currentSection = new Section(true);
 				associateNodeWithSection(currentOutlinee, currentSection);
 				currentOutlinee.appendSection(currentSection);
 			} else if(currentOutlinee === null) {
-				// This step is not in the algorithm but is needed here since root may not be a sectioning element
+				// Do nothing
+				// (this step is not in the algorithm but is needed here since root may not be a sectioning element)
 			} else if(isHeadingContentElement(node)) {
 				if(hasNoHeading(currentSection)) currentSection.heading = node;
 				else if(hasImpliedHeading(currentOutlinee.lastSection) || node.rank >= currentOutlinee.lastSection.heading.rank) {
@@ -323,13 +327,8 @@ function HTMLOutline(root) {
 				}
 			} else if(!stack.isEmpty() && isSectioningRootElement(node)) {
 				if(hasNoHeading(currentSection)) createImpliedHeading(currentSection);
+				currentSection = currentOutlinee.parentSection;
 				currentOutlinee = stack.pop();
-				currentSection = currentOutlinee.lastSection;
-				if(currentSection.childSections.length > 0 && !currentSection.lastChild.explicit) {
-					do {
-						currentSection = currentSection.lastChild;
-					} while(currentSection.childSections.length > 0);
-				}
 			} else if(isSectioningContentElement(node) || isSectioningRootElement(node)) {
 				if(hasNoHeading(currentSection)) createImpliedHeading(currentSection);
 				// If the root is a sectioning element, the walk ends here

@@ -22,3 +22,7 @@ The function `HTMLOutline` adds several properties to the nodes in the DOM subtr
 * `text` is the [text](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#the-hgroup-element) of a heading content element;
 * `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element (an integer between -6 and -1);
 * `depth` is the [outline depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element which is associated with a section.
+
+### License
+
+[WTFPL-2.0](https://tldrlegal.com/license/do-wtf-you-want-to-public-license-v2-(wtfpl-2.0))

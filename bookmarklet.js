@@ -8,7 +8,7 @@ var CSSRules = [
 	// CSS reset (except: text-rendering, link color)
 	// TODO: directional properties should not be reset
 	"#h5o-outside,#h5o-outside *{\
-		background-color:transparent;\
+		background:transparent;\
 		border:none;\
 		border-radius:0;\
 		bottom:auto;\
@@ -56,7 +56,7 @@ var CSSRules = [
 		color:black;\
 	}",
 	"#h5o-outside{\
-		background-color:transparent;\
+		background:transparent;\
 		box-sizing:border-box;\
 		display:block;\
 		height:100%;\
@@ -69,7 +69,7 @@ var CSSRules = [
 		z-index:2147483647;\
 	}",
 	"#h5o-inside{\
-		background-color:white;\
+		background:white;\
 		border:2px solid black;\
 		box-sizing:border-box;\
 		display:block;\
@@ -95,6 +95,7 @@ var CSSRules = [
 	}",
 	"#h5o-inside a{\
 		display:inline;\
+		cursor:pointer;\
 	}",
 	"#h5o-inside a:hover{\
 		text-decoration:underline;\

@@ -166,8 +166,10 @@ function printSection(section) {
 	var li = document.createElement("li");
 	var title = document.createElement("a");
 	li.appendChild(title);
-	
-	if(section.heading === null || /^[ \r\n\t]*$/.test(section.heading.text)) {
+
+    var sectionHeading = (section.heading !== null ? getElementText(section.heading) : '');
+
+	if(/^[ \r\n\t]*$/.test(sectionHeading)) {
 		li.className = "h5o-notitle";
 		switch(section.associatedNodes[0].nodeName.toLowerCase()) {
 			case "body": title.textContent = "Document"; break;
@@ -177,7 +179,7 @@ function printSection(section) {
 			case "section": title.textContent = "Section"; break;
 			default: title.textContent = "Empty title";
 		}
-	} else title.textContent = section.heading.text;
+	} else title.textContent = sectionHeading;
 	
 	var node = section.explicit ? section.associatedNodes[0] : section.heading;
 	title.href = "#" + node.id;
@@ -197,6 +199,30 @@ function printSection(section) {
 	
 	li.appendChild(printOutline(section.childSections));
 	return li;
+}
+
+function getElementText(node) {
+    var text = '';
+
+    // Text node (3) or CDATA node (4) - return its text
+    if ((node.nodeType === 3) || (node.nodeType === 4)) {
+        text = node.nodeValue;
+        // If node is an element (1) and an img, input[type=image], or area element, return its alt text
+    } else if ((node.nodeType === 1) && (
+        (node.tagName.toLowerCase() == 'img') ||
+        (node.tagName.toLowerCase() == 'area') ||
+        ((node.tagName.toLowerCase() == 'input') && node.getAttribute('type') && (node.getAttribute('type').toLowerCase() == 'image'))
+    )) {
+        text = node.getAttribute('alt') || '';
+        // Traverse children unless this is a script or style element
+    } else if ((node.nodeType === 1) && !node.tagName.match(/^(script|style)$/i)) {
+        var children = node.childNodes;
+        for (var i = 0, l = children.length; i < l; i++) {
+            text += getElementText(children[i]);
+        }
+    }
+
+    return text;
 }
 
 // Section class
@@ -460,4 +486,3 @@ function HTMLOutline(root) {
 }
 
 })();
-
